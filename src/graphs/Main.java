@@ -5,21 +5,22 @@
  */
 package graphs;
 
-import java.util.*;
-import java.io.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 /**
  *
  * @author Hector Ivan Garcia-Hernandez
  */
 
-public class Main {
+public class Main implements ActionListener{
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        new Main();
         
         //Variables to create graphs
         int n = 100, m = 10, dir = 0, cic = 0, d = 5;
@@ -37,57 +38,69 @@ public class Main {
         grafo.Barabasi(n, d, g, dir, cic);
         grafo.graphGraph(grafo, dir, "bar");
         
-        
-        
-        //Node nodoA = new Node(12,"A","Nodo A");
-        //Node nodoB = new Node(21,"B","Nodo B");
-        //Edge ed = new Edge(nodoA, nodoB, "Une nodo A y B");
-        //HashMap<Integer, Node> hm = ed.getNodes();
-        /*HashMap<Integer, Node> NG = grafo.getNodesGraph(); // HAshMap to retrieve nodes
-        HashMap<Integer, Edge> EG = grafo.getEdgesGraph(); // HashMap to retrieve edges
-        Set set = NG.entrySet();
-        Iterator i = set.iterator();
-        while(i.hasNext()) {
-            Map.Entry mentry = (Map.Entry)i.next();
-            System.out.print("Key is: " + mentry.getKey() + " & Value is: ");
-            Node a = (Node)mentry.getValue();
-            System.out.println(a.getId()+ " " + a.getName() + " " + a.getData());
-        }
-        System.out.println("El número de aristas es: " + EG.size());
-        try (FileWriter fw = new FileWriter("C:\\temp\\graph.gv");
-                BufferedWriter bw = new BufferedWriter(fw);
-                PrintWriter out = new PrintWriter(bw)) {
-            if (dir == 0) { // Not directed graph
-                out.println("strict graph{");
-                out.flush();
-            } else { // Directed graph
-                out.println("strict digraph{");
-                out.flush();
-            }
-        
-        Set setE = EG.entrySet();
-        Iterator it = setE.iterator();
-        while(it.hasNext()) {
-            Map.Entry mentry = (Map.Entry)it.next();
-            System.out.print("Key is: " + mentry.getKey() + " & connects: ");
-            Edge edge = (Edge)mentry.getValue();
-            HashMap<Integer, Node> anode = edge.getNodes();
-            Node A = anode.get(1);
-            Node B = anode.get(2);
-            System.out.println("node " + A.getId() + " & node " + B.getId());
-            if (dir == 0) { // Not directed graph
-                out.println("   " + A.getId() + "--" + B.getId());
-                out.flush();
-            } else { // Directed graph
-                out.println("   " + A.getId() + "->" + B.getId());
-                out.flush();
-            }
-        }
-        out.println("}");
-        out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+    }
+    
+    Main() {
+        JFrame f = new JFrame("Menu Demo");
+        f.setSize(220, 200);
+
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JMenuBar jmb = new JMenuBar();
+
+        JMenu jmFile = new JMenu("File");
+        JMenuItem jmiOpen = new JMenuItem("Open");
+        JMenuItem jmiClose = new JMenuItem("Close");
+        JMenuItem jmiSave = new JMenuItem("Save");
+        JMenuItem jmiExit = new JMenuItem("Exit");
+        JButton jb = new JButton("Boton");
+        f.add(jb);
+        jmFile.add(jmiOpen);
+        jmFile.add(jmiClose);
+        jmFile.add(jmiSave);
+        jmFile.addSeparator();
+        jmFile.add(jmiExit);
+        jmb.add(jmFile);
+
+        JMenu jmOptions = new JMenu("Options");
+        JMenu a = new JMenu("A");
+        JMenuItem b = new JMenuItem("B");
+        JMenuItem c = new JMenuItem("C");
+        JMenuItem d = new JMenuItem("D");
+        a.add(b);
+        a.add(c);
+        a.add(d);
+        jmOptions.add(a);
+
+        JMenu e = new JMenu("E");
+        e.add(new JMenuItem("F"));
+        e.add(new JMenuItem("G"));
+        jmOptions.add(e);
+
+        jmb.add(jmOptions);
+
+        JMenu jmHelp = new JMenu("Help");
+        JMenuItem jmiAbout = new JMenuItem("About");
+        jmHelp.add(jmiAbout);
+        jmb.add(jmHelp);
+
+        jmiOpen.addActionListener(this);
+        jmiClose.addActionListener(this);
+        jmiSave.addActionListener(this);
+        jmiExit.addActionListener(this);
+        b.addActionListener(this);
+        c.addActionListener(this);
+        d.addActionListener(this);
+        jmiAbout.addActionListener(this);
+        jb.addActionListener(this);
+
+        f.setJMenuBar(jmb);
+        f.setVisible(true);
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        String comStr = ae.getActionCommand();
+        System.out.println(comStr + " Selected");
     }
     
 }

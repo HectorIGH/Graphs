@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.lang.*;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -336,6 +337,7 @@ public class Graph {
         }
         out.println("}");
         out.close();
+        JOptionPane.showMessageDialog(null, "The graph will be saved in: C:\\temp\\"+name+".gv", "Graph Created", JOptionPane.INFORMATION_MESSAGE);
         return 1;
         } catch (IOException e) {
             e.printStackTrace();
