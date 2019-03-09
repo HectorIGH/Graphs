@@ -43,6 +43,7 @@ public class Graph {
         a.updateGrad();
         b.updateGrad();
         a.setAdjacent(b);
+        b.setAdjacent(a);
         return 0;
     }
     

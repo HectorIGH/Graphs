@@ -52,8 +52,8 @@ public class Main{
     
     private static void showGUI() {
         JFrame f = new JFrame("Menu Demo");
-        JPanel p = new JPanel(new GridLayout(4,1));
-        f.setSize(420, 400);
+        JPanel p = new JPanel(new GridLayout(0,1));
+        //f.setSize(300, 100);
         f.setLocationRelativeTo(null);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -265,7 +265,7 @@ public class Main{
                             // Create grafo using the Erdös' algorithm
                             grafo.Erdos((int)JSnodos.getValue(), (int)JSedges.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
                             grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "erd");
-                            System.out.println(grafo.getNodesGraph().get(0).getAdjacentNodes());
+                            //System.out.println(grafo.getNodesGraph().get(0).getAdjacentNodes());
                             break;
                         case 1: // Gilbert
                             // Create grafo using the Gilbert's algorithm
@@ -290,6 +290,7 @@ public class Main{
         });
         
         p.add(jbGrafos);
+        f.setSize(300, 100 * p.getComponentCount());
         f.add(p);
 
         f.setJMenuBar(jmb);
