@@ -5,6 +5,8 @@
  */
 package graphs;
 
+import java.util.HashMap;
+
 /**
  *
  * @author Hector Ivan Garcia-Hernandez
@@ -14,6 +16,7 @@ public class Node {
     int id, grad = 0;
     String name, data;
     double x,y;
+    HashMap<Integer, Node> adjacentNodes = new HashMap<>();
     
     public Node() {
         // Construct with no parameter
@@ -31,6 +34,14 @@ public class Node {
         this.data = data;
         this.x = x;
         this.y = y;
+    }
+    
+    public void setAdjacent(Node nodo) {
+        adjacentNodes.put(nodo.getId(), nodo);
+    }
+    
+    public HashMap<Integer, Node> getAdjacentNodes() {
+        return adjacentNodes;
     }
     
     public void setId(int Id) {

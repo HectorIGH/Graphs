@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
-import java.lang.*;
 import javax.swing.JOptionPane;
 
 /**
@@ -43,6 +42,7 @@ public class Graph {
         Edges.put(id, edge);
         a.updateGrad();
         b.updateGrad();
+        a.setAdjacent(b);
         return 0;
     }
     
@@ -97,7 +97,7 @@ public class Graph {
                 Node A = edgeNodes.get(1); // Node a from the edge
                 Node B = edgeNodes.get(2); // Node b from the edge
                 create = 1;
-                if ((a == A && b == B) || (a == B && b == A)) { // The edge already exists
+                if ((a == A && b == B) || (a == B && b == A && dir == 0)) { // The edge already exists
                     create = 0; // Since exists, we don't create it again
                     break;
                 }
@@ -141,7 +141,7 @@ public class Graph {
                         Node A = edgeNodes.get(1); // Node a from the edge
                         Node B = edgeNodes.get(2); // Node b from the edge
                         create = 1;
-                        if ((a == A && b == B) || (a == B && b == A)) { // The edge already exists
+                        if ((a == A && b == B) || (a == B && b == A && dir == 0)) { // The edge already exists
                             create = 0; // Since exists, we don't create it again
                             break;
                         }
@@ -168,7 +168,7 @@ public class Graph {
                 Node A = edgeNodes.get(1); // Node a from the edge
                 Node B = edgeNodes.get(2); // Node b from the edge
                 create = 1;
-                if ((a == A && b == B) || (a == B && b == A)) { // The edge already exists
+                if ((a == A && b == B) || (a == B && b == A && dir == 0)) { // The edge already exists
                     create = 0; // Since exists, we don't create it again
                     break;
                 }
@@ -224,7 +224,7 @@ public class Graph {
                         Node A = edgeNodes.get(1); // Node a from the edge
                         Node B = edgeNodes.get(2); // Node b from the edge
                         create = 1;
-                        if ((a == A && b == B) || (a == B && b == A)) { // The edge already exists
+                        if ((a == A && b == B) || (a == B && b == A && dir == 0)) { // The edge already exists
                             create = 0; // Since exists, we don't create it again
                             break;
                         }
@@ -255,7 +255,7 @@ public class Graph {
                 Node A = edgeNodes.get(1); // Node a from the edge
                 Node B = edgeNodes.get(2); // Node b from the edge
                 create = 1;
-                if ((a == A && b == B) || (a == B && b == A)) { // The edge already exists
+                if ((a == A && b == B) || (a == B && b == A && dir == 0)) { // The edge already exists
                     create = 0; // Since exists, we don't create it again
                     break;
                 }
@@ -277,9 +277,9 @@ public class Graph {
             for (int j = 0; j < Nodes.size() - (1 - cic); j++) { // Iterate over the existing nodes to connect them
                 // The (1 - cic) part controls whether we allow or not a self-loop
                 p = rand.nextFloat(); // Random probability
-                //pr = 1 - Nodes.get(j).getGrad() / (double)(g); // Get a value proportional to the grad of the node
+                pr = 1 - Nodes.get(j).getGrad() / (double)(g); // Get a value proportional to the grad of the node
                 //pr = 1 - (double)Nodes.get(j).getGrad() / (double)(Edges.size() + g);
-                pr = 1 - (double)(Edges.size()) / (double)(Nodes.get(j).getGrad() + g + Edges.size());
+                //pr = 1 - (double)(Edges.size()) / (double)(Nodes.get(j).getGrad() + g + Edges.size());
                 if (i < d) {
                     pr = 1;
                 }
@@ -304,7 +304,7 @@ public class Graph {
     }
     
     public int graphGraph(Graph grapho, int dir, String name) {
-        System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
+        //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         HashMap<Integer, Edge> EG = grapho.getEdgesGraph();
         try (FileWriter fw = new FileWriter("C:\\temp\\"+name+".gv");
                 BufferedWriter bw = new BufferedWriter(fw);
@@ -340,7 +340,7 @@ public class Graph {
         JOptionPane.showMessageDialog(null, "The graph will be saved in: C:\\temp\\"+name+".gv", "Graph Created", JOptionPane.INFORMATION_MESSAGE);
         return 1;
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "The graph couldn't be saved in: C:\\temp\\"+name+".gv", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
             return 0;
         }
     }
