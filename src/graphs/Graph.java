@@ -38,7 +38,7 @@ public class Graph {
     }
     
     public int createEdge(int id, Node a, Node b, String data) {
-        Edge edge = new Edge(a, b, data);
+        Edge edge = new Edge(a, b);
         Edges.put(id, edge);
         a.updateGrad();
         b.updateGrad();
@@ -279,12 +279,9 @@ public class Graph {
                 // The (1 - cic) part controls whether we allow or not a self-loop
                 p = rand.nextFloat(); // Random probability
                 pr = 1 - Nodes.get(j).getGrad() / (double)(g); // Get a value proportional to the grad of the node
-                //pr = 1 - (double)Nodes.get(j).getGrad() / (double)(Edges.size() + g);
-                //pr = 1 - (double)(Edges.size()) / (double)(Nodes.get(j).getGrad() + g + Edges.size());
                 if (i < d) {
                     pr = 1;
                 }
-                //System.out.println(p + "," + pr);
                 if (pr > p) {
                     Node A = Nodes.get(Nodes.size() - 1);
                     Node B = Nodes.get(j);

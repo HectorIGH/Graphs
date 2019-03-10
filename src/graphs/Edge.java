@@ -21,7 +21,7 @@ public class Edge {
         // Constructor with no parameters
     }
     
-    public Edge(Node a, Node b, String data) {
+    public Edge(Node a, Node b) {
         this.a= a;
         this.b = b;
         this.data = data;
