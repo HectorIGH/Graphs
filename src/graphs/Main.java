@@ -8,10 +8,8 @@ package graphs;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.DefaultFormatter;
 
 /**
  *
@@ -260,27 +258,100 @@ public class Main{
                     System.out.println(comboGraph.getSelectedItem() + " " + comboDirig.getSelectedItem() + " " + comboConnect.getSelectedItem() + " " + JSnodos.getValue() + " " + JSedges.getValue() + " " + JSprobability.getValue() + " " + JSdistance.getValue() + " " + JSConNodes.getValue() + " " + JSexpectedNodes.getValue());
                     // Create object Graph
                     Graph grafo = new Graph();
+                    // Dialog and worker to show a progress bar
+                    SwingWorker<Void, Void> worker;
+                    final JDialog dialog = new JDialog(f, true);
+                    dialog.setUndecorated(true);
+                    dialog.setLocationRelativeTo(null);
+                    dialog.setLocation(f.getLocation().x + f.getSize().width / 4, f.getLocation().y + f.getSize().height / 4);
+                    JProgressBar bar = new JProgressBar();
+                    bar.setIndeterminate(true);
+                    bar.setStringPainted(true);
+                    bar.setBackground(Color.green);
+                    bar.setString("Creating. Please wait...");
+                    dialog.add(bar);
+                    dialog.pack();
                     switch (comboGraph.getSelectedIndex()) {
                         case 0: // Erdös - Rényi model
                             // Create grafo using the Erdös' algorithm
-                            grafo.Erdos((int)JSnodos.getValue(), (int)JSedges.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
-                            grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "erd");
+                            // Shows a simple progress bar while executing
+                            worker = new SwingWorker<Void, Void>() {
+                                @Override
+                                protected Void doInBackground() {
+                                    grafo.Erdos((int)JSnodos.getValue(), (int)JSedges.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
+                                    grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "erd");
+                                    return null;
+                                }
+                                @Override
+                                protected void done() {
+                                    dialog.dispose();
+                                }
+                            };
+                            worker.execute();
+                            dialog.setVisible(true);
+                            //grafo.Erdos((int)JSnodos.getValue(), (int)JSedges.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
+                            //grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "erd");
                             //System.out.println(grafo.getNodesGraph().get(0).getAdjacentNodes());
                             break;
                         case 1: // Gilbert
                             // Create grafo using the Gilbert's algorithm
-                            grafo.Gilbert((int)JSnodos.getValue(), (double)JSprobability.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
-                            grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "gil");
+                            // Shows a simple progress bar while executing
+                            worker = new SwingWorker<Void, Void>() {
+                                @Override
+                                protected Void doInBackground() {
+                                    grafo.Gilbert((int)JSnodos.getValue(), (double)JSprobability.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
+                                    grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "gil");
+                                    return null;
+                                }
+                                @Override
+                                protected void done() {
+                                    dialog.dispose();
+                                }
+                            };
+                            worker.execute();
+                            dialog.setVisible(true);
+                            //grafo.Gilbert((int)JSnodos.getValue(), (double)JSprobability.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
+                            //grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "gil");
                             break;
                         case 2: // Simple Geographic Model
                             // Create grafo using the Geographic algorithm
-                            grafo.Geo((int)JSnodos.getValue(), (double)JSdistance.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
-                            grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "geo");
+                            // Shows a simple progress bar while executing
+                            worker = new SwingWorker<Void, Void>() {
+                                @Override
+                                protected Void doInBackground() {
+                                    grafo.Geo((int)JSnodos.getValue(), (double)JSdistance.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
+                                    grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "geo");
+                                    return null;
+                                }
+                                @Override
+                                protected void done() {
+                                    dialog.dispose();
+                                }
+                            };
+                            worker.execute();
+                            dialog.setVisible(true);
+                            //grafo.Geo((int)JSnodos.getValue(), (double)JSdistance.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
+                            //grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "geo");
                             break;
                         case 3: // Modified Barabási - Albert
                             // Create grafo using the Garabasi's algorithm
-                            grafo.Barabasi((int)JSnodos.getValue(), (int)JSConNodes.getValue(), (int)JSexpectedNodes.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
-                            grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "bar");
+                            // Shows a simple progress bar while executing
+                            worker = new SwingWorker<Void, Void>() {
+                                @Override
+                                protected Void doInBackground() {
+                                    grafo.Barabasi((int)JSnodos.getValue(), (int)JSConNodes.getValue(), (int)JSexpectedNodes.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
+                                    grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "bar");
+                                    return null;
+                                }
+                                @Override
+                                protected void done() {
+                                    dialog.dispose();
+                                }
+                            };
+                            worker.execute();
+                            dialog.setVisible(true);
+                            //grafo.Barabasi((int)JSnodos.getValue(), (int)JSConNodes.getValue(), (int)JSexpectedNodes.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
+                            //grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "bar");
                             break;
                         }
                 } else {
@@ -288,12 +359,12 @@ public class Main{
                 }
             }
         });
-        
         p.add(jbGrafos);
         f.setSize(300, 100 * p.getComponentCount());
         f.add(p);
 
         f.setJMenuBar(jmb);
         f.setVisible(true);
+        f.setLocationRelativeTo(null);
     }
 }

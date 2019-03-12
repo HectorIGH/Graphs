@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
@@ -303,43 +304,50 @@ public class Graph {
     
     public int graphGraph(Graph grapho, int dir, String name) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
-        HashMap<Integer, Edge> EG = grapho.getEdgesGraph();
-        try (FileWriter fw = new FileWriter("C:\\temp\\"+name+".gv");
-                BufferedWriter bw = new BufferedWriter(fw);
-                PrintWriter out = new PrintWriter(bw)) {
-            if (dir == 0) { // Not directed graph
-                out.println("strict graph{");
-                out.flush();
-            } else { // Directed graph
-                out.println("strict digraph{");
-                out.flush();
-            }
+        JFileChooser fc = new JFileChooser();
+        if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
+            HashMap<Integer, Edge> EG = grapho.getEdgesGraph();
+            try (FileWriter fw = new FileWriter(name+".gv");
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw)) {
+                if (dir == 0) { // Not directed graph
+                    out.println("strict graph{");
+                    out.flush();
+                } else { // Directed graph
+                    out.println("strict digraph{");
+                    out.flush();
+                }
         
-        Set setE = EG.entrySet();
-        Iterator it = setE.iterator();
-        while(it.hasNext()) {
-            Map.Entry mentry = (Map.Entry)it.next();
-            //System.out.print("Key is: " + mentry.getKey() + " & connects: ");
-            Edge edge = (Edge)mentry.getValue();
-            HashMap<Integer, Node> anode = edge.getNodes();
-            Node A = anode.get(1);
-            Node B = anode.get(2);
-            //System.out.println("node " + A.getId() + " & node " + B.getId());
-            if (dir == 0) { // Not directed graph
-                out.println("   \"" + A.getId() + "," + A.getGrad() + "\"--\"" + B.getId() + "," + B.getGrad() + "\"");
-                out.flush();
-            } else { // Directed graph
-                out.println("   \"" + A.getId() + "," + A.getGrad() + "\"->\"" + B.getId() + "," + B.getGrad() + "\"");
-                out.flush();
+            Set setE = EG.entrySet();
+            Iterator it = setE.iterator();
+            while(it.hasNext()) {
+                Map.Entry mentry = (Map.Entry)it.next();
+                //System.out.print("Key is: " + mentry.getKey() + " & connects: ");
+                Edge edge = (Edge)mentry.getValue();
+                HashMap<Integer, Node> anode = edge.getNodes();
+                Node A = anode.get(1);
+                Node B = anode.get(2);
+                //System.out.println("node " + A.getId() + " & node " + B.getId());
+                if (dir == 0) { // Not directed graph
+                    out.println("   \"" + A.getId() + "," + A.getGrad() + "\"--\"" + B.getId() + "," + B.getGrad() + "\"");
+                    out.flush();
+                } else { // Directed graph
+                    out.println("   \"" + A.getId() + "," + A.getGrad() + "\"->\"" + B.getId() + "," + B.getGrad() + "\"");
+                    out.flush();
+                }
             }
+            out.println("}");
+            out.close();
+            JOptionPane.showMessageDialog(null, "The graph will be saved in: " + name + ".gv", "Graph Created", JOptionPane.INFORMATION_MESSAGE);
+            return 1;
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "The graph couldn't be saved in: " + name + ".gv", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+                return 0;
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "The graph was not saved.", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
         }
-        out.println("}");
-        out.close();
-        JOptionPane.showMessageDialog(null, "The graph will be saved in: C:\\temp\\"+name+".gv", "Graph Created", JOptionPane.INFORMATION_MESSAGE);
         return 1;
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "The graph couldn't be saved in: C:\\temp\\"+name+".gv", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
-            return 0;
-        }
     }
 }
