@@ -39,7 +39,7 @@ public class Graph {
     }
     
     public int createEdge(int id, Node a, Node b, String data) {
-        Edge edge = new Edge(a, b);
+        Edge edge = new Edge(a, b, data);
         Edges.put(id, edge);
         a.updateGrad();
         b.updateGrad();
