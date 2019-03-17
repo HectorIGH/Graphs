@@ -16,6 +16,7 @@ public class Edge {
     Node a;
     Node b;
     String data;
+    double weight;
     
     public Edge() {
         // Constructor with no parameters
@@ -27,9 +28,16 @@ public class Edge {
         this.data = data;
     }
     
+    public Edge(Node a, Node b, String data, double weight) {
+        this.a= a;
+        this.b = b;
+        this.data = data;
+        this.weight = weight;
+    }
+    
     public void setNodes(Node A, Node B) {
-        a = A;
-        b = B;
+        this.a = A;
+        this.b = B;
     }
     
     public HashMap<Integer, Node> getNodes() {
@@ -41,10 +49,18 @@ public class Edge {
     }
     
     public void setData(String Data) {
-        data = Data;
+        this.data = Data;
     }
     
     public String getData(){
         return data;
+    }
+    
+    public void setWeight(double weight) {
+        this.weight = weight;
+    }
+    
+    public double getWeight() {
+        return weight;
     }
 }

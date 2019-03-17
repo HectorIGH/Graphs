@@ -16,6 +16,7 @@ public class Node {
     int id, grad = 0;
     String name, data;
     double x,y;
+    boolean visited = false;
     HashMap<Integer, Node> adjacentNodes = new HashMap<>();
     
     public Node() {

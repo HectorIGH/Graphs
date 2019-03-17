@@ -280,6 +280,8 @@ public class Main{
                                 protected Void doInBackground() {
                                     grafo.Erdos((int)JSnodos.getValue(), (int)JSedges.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
                                     grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "erd");
+                                    grafo.BFS(grafo, grafo.Nodes.get(0));
+                                    grafo.graphTree(grafo, "BFS");
                                     return null;
                                 }
                                 @Override

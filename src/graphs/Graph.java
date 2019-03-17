@@ -21,6 +21,7 @@ public class Graph {
     
     HashMap<Integer, Node> Nodes = new HashMap<>();
     HashMap<Integer, Edge> Edges = new HashMap<>();
+    HashMap<Integer, Edge> treeEdges = new HashMap<>();
     
     public Graph() {
         //Constructor with no parameters
@@ -349,5 +350,125 @@ public class Graph {
             JOptionPane.showMessageDialog(null, "The graph was not saved.", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
         }
         return 1;
+    }
+    
+    public int graphTree(Graph grafo, String name) {
+        //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
+        JFileChooser fc = new JFileChooser();
+        if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
+            HashMap<Integer, Edge> EG = grafo.treeEdges;
+            try (FileWriter fw = new FileWriter(name+".gv");
+                BufferedWriter bw = new BufferedWriter(fw);
+                PrintWriter out = new PrintWriter(bw)) {
+                out.println("strict digraph{");
+                out.flush();
+        
+                Set setE = EG.entrySet();
+                Iterator it = setE.iterator();
+                while(it.hasNext()) {
+                    Map.Entry mentry = (Map.Entry)it.next();
+                    //System.out.print("Key is: " + mentry.getKey() + " & connects: ");
+                    Edge edge = (Edge)mentry.getValue();
+                    HashMap<Integer, Node> anode = edge.getNodes();
+                    Node A = anode.get(1);
+                    Node B = anode.get(2);
+                    out.println("   \"" + A.getId() + "\"->\"" + B.getId() + "\"");
+                    out.flush();
+                }
+                out.println("}");
+                out.close();
+                JOptionPane.showMessageDialog(null, "The graph will be saved in: " + name + ".gv", "Graph Created", JOptionPane.INFORMATION_MESSAGE);
+                return 1;
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "The graph couldn't be saved in: " + name + ".gv", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+                return 0;
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "The graph was not saved.", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return 1;
+    }
+    
+    public int readGraph() {
+        return 0;
+    }
+    
+    public void BFS(Graph grafo, Node root) {
+        System.out.println(root.getId());
+        Stack<Node> stack = new Stack<>();
+        stack.add(root);
+        while(!stack.isEmpty()) {
+            Node current = stack.pop();
+            current.visited = true;
+            System.out.println(current.getId());
+            HashMap<Integer, Node> neighbors = current.getAdjacentNodes();
+            Set set = neighbors.entrySet();
+            Iterator it = set.iterator();
+            while(it.hasNext()) {
+                Map.Entry mentry = (Map.Entry)it.next();
+                Node neighbor = (Node)mentry.getValue();
+                if (neighbor != null && !neighbor.visited) {
+                    stack.add(neighbor);
+                }
+            }
+        }
+    }
+    
+    public int DFS_R(Graph grafo, Node root) {
+        //System.out.println(root.getId());
+        HashMap<Integer, Node> neighbors = root.getAdjacentNodes();
+        root.visited = true;
+        Set set = neighbors.entrySet();
+        Iterator it = set.iterator();
+        int id = -1;
+        Node neighbor = new Node();
+        while (it.hasNext()) {
+            Map.Entry mentry = (Map.Entry)it.next();
+            neighbor = (Node)mentry.getValue();
+            if (neighbor != null && !neighbor.visited) {
+                id = DFS_R(grafo, neighbor);
+                Edge edge = new Edge(root, grafo.getNodesGraph().get(id), "");
+                Edge put = grafo.treeEdges.putIfAbsent(id, edge);
+                //System.out.println(root.getId() + "->" + id);
+            }
+        }
+        return root.getId();
+    }
+    
+    public void DFS_I(Graph grafo, Node root){
+        Stack<Node> stack = new Stack<>();
+        stack.add(root);
+        root.visited = true;
+        int[] order = new int[grafo.Nodes.size()];
+        int adding = 0;
+        while (!stack.isEmpty()) {
+            Node current = stack.pop();
+            //order[adding] = current.getId();
+            //adding++;
+            HashMap<Integer, Node> neighbors = current.getAdjacentNodes();
+            Set set = neighbors.entrySet();
+            Iterator it = set.iterator();
+            while (it.hasNext()) {
+                Map.Entry mentry = (Map.Entry)it.next();
+                Node neighbor = (Node)mentry.getValue();
+                if (neighbor != null && !neighbor.visited) {
+                    stack.add(neighbor);
+                    neighbor.visited = true;
+                }
+            }
+            if (!stack.isEmpty()){ 
+                //System.out.println(current.getId() + "->" + stack.peek().getId());
+                //stack.peek();
+                //System.out.println(grafo.treeEdges.size()+"-"+ adding);
+                Edge edge = new Edge(current, stack.peek(), "");
+                Edge put = grafo.treeEdges.putIfAbsent(adding, edge);
+            }
+            adding++;
+        }
+        for (int i = 0; i < order.length; i++) {
+            System.out.println(order[i]);
+        }
+        System.out.println("Ya acabé");
     }
 }
