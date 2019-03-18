@@ -395,21 +395,27 @@ public class Graph {
     }
     
     public void BFS(Graph grafo, Node root) {
-        System.out.println(root.getId());
+        //System.out.println(root.getId());
         Stack<Node> stack = new Stack<>();
         stack.add(root);
+        int adding = 0;
         while(!stack.isEmpty()) {
             Node current = stack.pop();
             current.visited = true;
-            System.out.println(current.getId());
+            //System.out.println(current.getId());
             HashMap<Integer, Node> neighbors = current.getAdjacentNodes();
             Set set = neighbors.entrySet();
             Iterator it = set.iterator();
             while(it.hasNext()) {
                 Map.Entry mentry = (Map.Entry)it.next();
                 Node neighbor = (Node)mentry.getValue();
-                if (neighbor != null && !neighbor.visited) {
+                if (!neighbor.visited) {
+                    neighbor.visited = true;
                     stack.add(neighbor);
+                    //System.out.println(current.getId() + "->" + neighbor.getId());
+                    Edge edge = new Edge(current, neighbor, "");
+                    Edge put = grafo.treeEdges.putIfAbsent(adding, edge);
+                    adding++;
                 }
             }
         }
@@ -440,7 +446,7 @@ public class Graph {
         Stack<Node> stack = new Stack<>();
         stack.add(root);
         root.visited = true;
-        int[] order = new int[grafo.Nodes.size()];
+        //int[] order = new int[grafo.Nodes.size()];
         int adding = 0;
         while (!stack.isEmpty()) {
             Node current = stack.pop();
@@ -466,9 +472,8 @@ public class Graph {
             }
             adding++;
         }
-        for (int i = 0; i < order.length; i++) {
-            System.out.println(order[i]);
-        }
-        System.out.println("Ya acabé");
+        //for (int i = 0; i < order.length; i++) {
+        //    System.out.println(order[i]);
+        //}
     }
 }

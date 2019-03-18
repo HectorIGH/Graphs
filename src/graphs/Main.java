@@ -29,29 +29,13 @@ public class Main{
                 showGUI();
             }
         });
-        
-        //Variables to create graphs
-        int n = 10, m = 10, dir = 0, cic = 0, d = 5;
-        double p = 0.5, r = 0.5, g = 10;
-        
-        // Create object Graph
-        //Graph grafo = new Graph();
-        // Create grafo using the Erdös' algorithm
-        //grafo.Erdos(n, m, dir, cic);
-        // Create grafo using the Gilbert's algorithm
-        //grafo.Gilbert(n, p, dir, cic);
-        // Create grafo using the Geographic algorithm
-        //grafo.Geo(n, r, dir, cic);
-        // Create grafo using the Garabasi's algorithm
-        //grafo.Barabasi(n, d, g, dir, cic);
-        //grafo.graphGraph(grafo, dir, "bar");
-        
     }
     
     private static void showGUI() {
+        // Create object Graph
+        Graph grafo = new Graph();
         JFrame f = new JFrame("Menu Demo");
         JPanel p = new JPanel(new GridLayout(0,1));
-        //f.setSize(300, 100);
         f.setLocationRelativeTo(null);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -59,6 +43,13 @@ public class Main{
 
         JButton jbGrafos = new JButton("Make random Graph");
         jbGrafos.setActionCommand("hacerGrafos");
+        
+        JButton jbLoadGraph = new JButton("Load a Graph from file");
+        jbLoadGraph.setActionCommand("leerGrafo");
+        
+        JButton jbSearchAlg = new JButton("Search Algorithms");
+        jbSearchAlg.setActionCommand("searchAlgorithms");
+        jbSearchAlg.setEnabled(false);
 
         JMenu jmHelp = new JMenu("Help");
         JMenuItem jmiAbout = new JMenuItem("About");
@@ -78,7 +69,7 @@ public class Main{
                 String[] dirig = {"No directed", "Directed"};
                 String[] connect = {"No self connections", "Self connections"};
                 
-                JComboBox<String> comboGraph = new JComboBox<>(models);;
+                JComboBox<String> comboGraph = new JComboBox<>(models);
                 JComboBox<String> comboDirig = new JComboBox<>(dirig);
                 JComboBox<String> comboConnect = new JComboBox<>(connect);
                 JSpinner JSnodos = new JSpinner(new SpinnerNumberModel(100, 0, 100000, 1));
@@ -139,7 +130,7 @@ public class Main{
                 comboDirig.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        System.out.println(comboDirig.getSelectedItem());
+                        //System.out.println(comboDirig.getSelectedItem());
                         int n = (int)JSnodos.getValue();
                         if (comboDirig.getSelectedIndex() == 0 && comboConnect.getSelectedIndex() == 0){
                             JSedges.setModel(new SpinnerNumberModel((int)JSedges.getValue(), 0, n * (n - 1) /2, 1));
@@ -159,7 +150,7 @@ public class Main{
                 comboConnect.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        System.out.println(comboConnect.getSelectedItem());
+                        //System.out.println(comboConnect.getSelectedItem());
                         int n = (int)JSnodos.getValue();
                         if (comboDirig.getSelectedIndex() == 0 && comboConnect.getSelectedIndex() == 0){
                             JSedges.setModel(new SpinnerNumberModel((int)JSedges.getValue(), 0, n * (n - 1) /2, 1));
@@ -179,7 +170,7 @@ public class Main{
                 JSnodos.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        System.out.println(JSnodos.getValue());
+                        //System.out.println(JSnodos.getValue());
                         int n = (int)JSnodos.getValue();
                         if (comboDirig.getSelectedIndex() == 0 && comboConnect.getSelectedIndex() == 0){
                             JSedges.setModel(new SpinnerNumberModel((int)JSedges.getValue(), 0, n * (n - 1) /2, 1));
@@ -199,35 +190,35 @@ public class Main{
                 JSedges.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        System.out.println(JSedges.getValue());
+                        //System.out.println(JSedges.getValue());
                     }
                 });
                 
                 JSprobability.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        System.out.println(JSprobability.getValue());
+                        //System.out.println(JSprobability.getValue());
                     }
                 });
                 
                 JSdistance.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        System.out.println(JSdistance.getValue());
+                        //System.out.println(JSdistance.getValue());
                     }
                 });
                 
                 JSConNodes.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        System.out.println(JSConNodes.getValue());
+                        //System.out.println(JSConNodes.getValue());
                     }
                 });
                 
                 JSexpectedNodes.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        System.out.println(JSexpectedNodes.getValue());
+                        //System.out.println(JSexpectedNodes.getValue());
                     }
                 });
                 
@@ -251,13 +242,10 @@ public class Main{
                 panel.add(JSConNodes);
                 panel.add(new JLabel("Node grad expected. Used in Barabási - Albert."));
                 panel.add(JSexpectedNodes);
-                
                 int result = JOptionPane.showConfirmDialog(null, panel, "Choose method and set parameters",
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (result == JOptionPane.OK_OPTION) {
                     System.out.println(comboGraph.getSelectedItem() + " " + comboDirig.getSelectedItem() + " " + comboConnect.getSelectedItem() + " " + JSnodos.getValue() + " " + JSedges.getValue() + " " + JSprobability.getValue() + " " + JSdistance.getValue() + " " + JSConNodes.getValue() + " " + JSexpectedNodes.getValue());
-                    // Create object Graph
-                    Graph grafo = new Graph();
                     // Dialog and worker to show a progress bar
                     SwingWorker<Void, Void> worker;
                     final JDialog dialog = new JDialog(f, true);
@@ -280,8 +268,6 @@ public class Main{
                                 protected Void doInBackground() {
                                     grafo.Erdos((int)JSnodos.getValue(), (int)JSedges.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
                                     grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "erd");
-                                    grafo.BFS(grafo, grafo.Nodes.get(0));
-                                    grafo.graphTree(grafo, "BFS");
                                     return null;
                                 }
                                 @Override
@@ -291,9 +277,6 @@ public class Main{
                             };
                             worker.execute();
                             dialog.setVisible(true);
-                            //grafo.Erdos((int)JSnodos.getValue(), (int)JSedges.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
-                            //grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "erd");
-                            //System.out.println(grafo.getNodesGraph().get(0).getAdjacentNodes());
                             break;
                         case 1: // Gilbert
                             // Create grafo using the Gilbert's algorithm
@@ -312,8 +295,6 @@ public class Main{
                             };
                             worker.execute();
                             dialog.setVisible(true);
-                            //grafo.Gilbert((int)JSnodos.getValue(), (double)JSprobability.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
-                            //grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "gil");
                             break;
                         case 2: // Simple Geographic Model
                             // Create grafo using the Geographic algorithm
@@ -332,8 +313,6 @@ public class Main{
                             };
                             worker.execute();
                             dialog.setVisible(true);
-                            //grafo.Geo((int)JSnodos.getValue(), (double)JSdistance.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
-                            //grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "geo");
                             break;
                         case 3: // Modified Barabási - Albert
                             // Create grafo using the Garabasi's algorithm
@@ -352,16 +331,66 @@ public class Main{
                             };
                             worker.execute();
                             dialog.setVisible(true);
-                            //grafo.Barabasi((int)JSnodos.getValue(), (int)JSConNodes.getValue(), (int)JSexpectedNodes.getValue(), (int)comboDirig.getSelectedIndex(), (int)comboConnect.getSelectedIndex());
-                            //grafo.graphGraph(grafo, comboDirig.getSelectedIndex(), "bar");
                             break;
                         }
+                    jbSearchAlg.setEnabled(true);
                 } else {
-                    System.out.println("Cancelled");
+                    //System.out.println("Cancelled");
                 }
             }
         });
+        
+        jbLoadGraph.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "Under Construction", "Information", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+        
+        jbSearchAlg.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panel = new JPanel(new GridLayout(0, 1));
+                String[] algos = {"BFS", "Recursive DFS", "Iterative DFS"};
+                JComboBox<String> comboAlgo = new JComboBox<>(algos);
+                JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
+                JButton JBalgo = new JButton("Run the algorithm.");
+                panel.add(new JLabel("Select the model to be used."));
+                panel.add(comboAlgo);
+                panel.add(new JLabel("Select the root node"));
+                panel.add(JSnodo);
+                panel.add(JBalgo);
+                JBalgo.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        int alg = comboAlgo.getSelectedIndex();
+                        int node = (int)JSnodo.getValue();
+                        System.out.println(alg+":"+node);
+                        switch (alg) {
+                            case 0:
+                                grafo.BFS(grafo, grafo.Nodes.get(node));
+                                grafo.graphTree(grafo, "BFSTree");
+                                break;
+                            case 1:
+                                grafo.DFS_R(grafo, grafo.Nodes.get(node));
+                                grafo.graphTree(grafo, "DFS_Recursive_Tree");
+                                break;
+                            case 2:
+                                grafo.DFS_I(grafo, grafo.Nodes.get(node));
+                                grafo.graphTree(grafo, "DFS_Iterative_Tree");
+                                break;
+                        }
+                    }
+                });
+                //int result = JOptionPane.showConfirmDialog(null, panel, "Choose algorithm and set root node",JOptionPane.YES_OPTION, JOptionPane.PLAIN_MESSAGE);
+                String[] options = {"OK"};
+                JOptionPane.showOptionDialog(null, panel, "Search algorithms", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+            }
+        });
+        
         p.add(jbGrafos);
+        p.add(jbLoadGraph);
+        p.add(jbSearchAlg);
         f.setSize(300, 100 * p.getComponentCount());
         f.add(p);
 
