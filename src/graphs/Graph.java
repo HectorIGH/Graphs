@@ -6,9 +6,12 @@
 package graphs;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.*;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -391,7 +394,31 @@ public class Graph {
     }
     
     public int readGraph() {
-        return 0;
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new File(System.getProperty("user.home")));
+        if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fc.getSelectedFile();
+            Path path = Paths.get(selectedFile.getAbsolutePath());
+            System.out.println("Selected file: " + path.toString());
+            List<String> lines = Collections.emptyList();
+            try {
+                lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+                Iterator<String> it = lines.iterator();
+                for (String line : lines) {
+                    if(line.contains("--") || line.contains("->")) {
+                        String[] currentLine = it.next().replace("\"", "").trim().split("--");
+                        String[] nodeR = currentLine[0].split(",| ");
+                        String[] nodeL = currentLine[1].split(",| ");
+                        System.out.println(nodeR[0] + "--" + nodeL[0]);
+                    }
+                }
+                return 1;
+            } catch(IOException e) {
+                JOptionPane.showMessageDialog(null, "The file could not be loaded.", "File not loaded", JOptionPane.INFORMATION_MESSAGE);
+                return 0;
+            }
+        }        
+        return 1;
     }
     
     public void BFS(Graph grafo, Node root) {

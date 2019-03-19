@@ -344,6 +344,7 @@ public class Main{
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null, "Under Construction", "Information", JOptionPane.INFORMATION_MESSAGE);
+                grafo.readGraph();
             }
         });
         
