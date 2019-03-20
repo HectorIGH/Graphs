@@ -52,6 +52,12 @@ public class Graph {
         return 0;
     }
     
+    public int createTreeEdge(int id, Node a, Node b, String data) {
+        Edge edge = new Edge(a, b, data);
+        treeEdges.put(id, edge);
+        return 0;
+    }
+    
     public int getGradNode(Node node) {
         return node.getGrad();
     }
@@ -115,7 +121,7 @@ public class Graph {
             }
             j++;
         }
-        return new Graph();
+        return this;
     }
     
     public Graph Gilbert(int n, double p, int dir, int cic) {
@@ -184,7 +190,7 @@ public class Graph {
             }
         }
         //System.out.println(Edges.size());
-        return new Graph();
+        return this;
     }
     
     public Graph Geo(int n, double r, int dir, int cic) {
@@ -271,7 +277,7 @@ public class Graph {
             }
         }
         //System.out.println(Edges.size());
-        return new Graph();
+        return this;
     }
     
     public Graph Barabasi(int n, int d, double g, int dir, int cic) {
@@ -295,7 +301,7 @@ public class Graph {
                 }
             }
         }
-        return new Graph();
+        return this;
     }
     
     public HashMap<Integer, Node> getNodesGraph() {
@@ -355,12 +361,16 @@ public class Graph {
         return 1;
     }
     
+    public HashMap<Integer, Edge> getEdgesTree() {
+        return treeEdges;
+    }
+    
     public int graphTree(Graph grafo, String name) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
         if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
-            HashMap<Integer, Edge> EG = grafo.treeEdges;
+            HashMap<Integer, Edge> EG = grafo.getEdgesTree();
             try (FileWriter fw = new FileWriter(name+".gv");
                 BufferedWriter bw = new BufferedWriter(fw);
                 PrintWriter out = new PrintWriter(bw)) {
@@ -393,9 +403,12 @@ public class Graph {
         return 1;
     }
     
-    public int readGraph() {
+    public Graph readGraph(Graph grafo) {
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new File(System.getProperty("user.home")));
+        int dir = 0;
+        int edges = 0;
+        int nodes = 0;
         if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fc.getSelectedFile();
             Path path = Paths.get(selectedFile.getAbsolutePath());
@@ -403,33 +416,75 @@ public class Graph {
             List<String> lines = Collections.emptyList();
             try {
                 lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-                Iterator<String> it = lines.iterator();
                 for (String line : lines) {
-                    if(line.contains("--") || line.contains("->")) {
-                        String[] currentLine = it.next().replace("\"", "").trim().split("--");
-                        String[] nodeR = currentLine[0].split(",| ");
-                        String[] nodeL = currentLine[1].split(",| ");
-                        System.out.println(nodeR[0] + "--" + nodeL[0]);
+                    if (line.contains("--") || line.contains("->")) {
+                        String[] currentLine = {""};
+                        if (line.contains("--")) {
+                            dir = 0;
+                            currentLine = line.replace("\"", "").trim().split("--");
+                        }
+                        if (line.contains("->")) {
+                            dir = 1;
+                            currentLine = line.replace("\"", "").trim().split("->");
+                        }
+                        String[] nodeL = currentLine[0].split(",| ");
+                        String[] nodeR = currentLine[1].split(",| ");
+                        int izq = Integer.parseInt(nodeL[0]);
+                        if (nodes < izq) {
+                            nodes = izq;
+                        }
+                        int der = Integer.parseInt(nodeR[0]);
+                        if (nodes < der) {
+                            nodes = der;
+                        }
                     }
                 }
-                return 1;
+                createNodes(nodes + 1);
+                for (String line : lines) {
+                    if(line.contains("--") || line.contains("->")) {
+                        String[] currentLine = {""};
+                        if (line.contains("--")) {
+                            dir = 0;
+                            currentLine = line.replace("\"", "").trim().split("--");
+                        }
+                        if (line.contains("->")) {
+                            dir = 1;
+                            currentLine = line.replace("\"", "").trim().split("->");
+                        }
+                        String[] nodeL = currentLine[0].split(",| ");
+                        String[] nodeR = currentLine[1].split(",| ");
+                        int izq = Integer.parseInt(nodeL[0]);
+                        int der = Integer.parseInt(nodeR[0]);
+                        createEdge(edges, grafo.Nodes.get(izq), grafo.Nodes.get(der), "Connects node " + izq + " and node " + der);
+                        edges++;
+                    }
+                }
+                System.out.println(Edges.size() +":" + Nodes.size());
             } catch(IOException e) {
                 JOptionPane.showMessageDialog(null, "The file could not be loaded.", "File not loaded", JOptionPane.INFORMATION_MESSAGE);
-                return 0;
+                return null;
             }
         }        
-        return 1;
+        return this;
+    }
+    
+    public void resetNodes(Graph grafo) {
+        Set set = grafo.getNodesGraph().entrySet();
+        Iterator it = set.iterator();
+        while(it.hasNext()) {
+            Map.Entry mentry = (Map.Entry)it.next();
+            Node node = (Node)mentry.getValue();
+            node.visited = false;
+        }
     }
     
     public void BFS(Graph grafo, Node root) {
-        //System.out.println(root.getId());
         Stack<Node> stack = new Stack<>();
         stack.add(root);
         int adding = 0;
         while(!stack.isEmpty()) {
             Node current = stack.pop();
             current.visited = true;
-            //System.out.println(current.getId());
             HashMap<Integer, Node> neighbors = current.getAdjacentNodes();
             Set set = neighbors.entrySet();
             Iterator it = set.iterator();
@@ -439,9 +494,7 @@ public class Graph {
                 if (!neighbor.visited) {
                     neighbor.visited = true;
                     stack.add(neighbor);
-                    //System.out.println(current.getId() + "->" + neighbor.getId());
-                    Edge edge = new Edge(current, neighbor, "");
-                    Edge put = grafo.treeEdges.putIfAbsent(adding, edge);
+                    createTreeEdge(adding, current, neighbor, "");
                     adding++;
                 }
             }
@@ -449,7 +502,6 @@ public class Graph {
     }
     
     public int DFS_R(Graph grafo, Node root) {
-        //System.out.println(root.getId());
         HashMap<Integer, Node> neighbors = root.getAdjacentNodes();
         root.visited = true;
         Set set = neighbors.entrySet();
@@ -461,9 +513,7 @@ public class Graph {
             neighbor = (Node)mentry.getValue();
             if (neighbor != null && !neighbor.visited) {
                 id = DFS_R(grafo, neighbor);
-                Edge edge = new Edge(root, grafo.getNodesGraph().get(id), "");
-                Edge put = grafo.treeEdges.putIfAbsent(id, edge);
-                //System.out.println(root.getId() + "->" + id);
+                createTreeEdge(id, root, grafo.getNodesGraph().get(id), "");
             }
         }
         return root.getId();
@@ -473,12 +523,9 @@ public class Graph {
         Stack<Node> stack = new Stack<>();
         stack.add(root);
         root.visited = true;
-        //int[] order = new int[grafo.Nodes.size()];
         int adding = 0;
         while (!stack.isEmpty()) {
             Node current = stack.pop();
-            //order[adding] = current.getId();
-            //adding++;
             HashMap<Integer, Node> neighbors = current.getAdjacentNodes();
             Set set = neighbors.entrySet();
             Iterator it = set.iterator();
@@ -491,16 +538,9 @@ public class Graph {
                 }
             }
             if (!stack.isEmpty()){ 
-                //System.out.println(current.getId() + "->" + stack.peek().getId());
-                //stack.peek();
-                //System.out.println(grafo.treeEdges.size()+"-"+ adding);
-                Edge edge = new Edge(current, stack.peek(), "");
-                Edge put = grafo.treeEdges.putIfAbsent(adding, edge);
+                createTreeEdge(adding, current, stack.peek(), "");
             }
             adding++;
         }
-        //for (int i = 0; i < order.length; i++) {
-        //    System.out.println(order[i]);
-        //}
     }
 }

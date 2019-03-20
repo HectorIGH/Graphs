@@ -344,7 +344,8 @@ public class Main{
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null, "Under Construction", "Information", JOptionPane.INFORMATION_MESSAGE);
-                grafo.readGraph();
+                grafo.readGraph(grafo);
+                jbSearchAlg.setEnabled(true);
             }
         });
         
@@ -371,14 +372,17 @@ public class Main{
                             case 0:
                                 grafo.BFS(grafo, grafo.Nodes.get(node));
                                 grafo.graphTree(grafo, "BFSTree");
+                                grafo.resetNodes(grafo);
                                 break;
                             case 1:
                                 grafo.DFS_R(grafo, grafo.Nodes.get(node));
                                 grafo.graphTree(grafo, "DFS_Recursive_Tree");
+                                grafo.resetNodes(grafo);
                                 break;
                             case 2:
                                 grafo.DFS_I(grafo, grafo.Nodes.get(node));
                                 grafo.graphTree(grafo, "DFS_Iterative_Tree");
+                                grafo.resetNodes(grafo);
                                 break;
                         }
                     }
