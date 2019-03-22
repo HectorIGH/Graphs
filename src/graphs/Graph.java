@@ -479,11 +479,11 @@ public class Graph {
     }
     
     public void BFS(Graph grafo, Node root) {
-        Stack<Node> stack = new Stack<>();
-        stack.add(root);
+        Deque<Node> myQ = new LinkedList<>();
+        myQ.add(root);
         int adding = 0;
-        while(!stack.isEmpty()) {
-            Node current = stack.pop();
+        while(!myQ.isEmpty()) {
+            Node current = myQ.pollFirst();
             current.visited = true;
             HashMap<Integer, Node> neighbors = current.getAdjacentNodes();
             Set set = neighbors.entrySet();
@@ -493,7 +493,7 @@ public class Graph {
                 Node neighbor = (Node)mentry.getValue();
                 if (!neighbor.visited) {
                     neighbor.visited = true;
-                    stack.add(neighbor);
+                    myQ.addLast(neighbor);
                     createTreeEdge(adding, current, neighbor, "");
                     adding++;
                 }
@@ -513,7 +513,9 @@ public class Graph {
             neighbor = (Node)mentry.getValue();
             if (neighbor != null && !neighbor.visited) {
                 id = DFS_R(grafo, neighbor);
-                createTreeEdge(id, root, grafo.getNodesGraph().get(id), "");
+                if (id != root.getId()) {
+                    createTreeEdge(id, root, grafo.getNodesGraph().get(id), "");
+                }
             }
         }
         return root.getId();
@@ -521,11 +523,13 @@ public class Graph {
     
     public void DFS_I(Graph grafo, Node root){
         Stack<Node> stack = new Stack<>();
+        Deque<Node> nodosIndex = new LinkedList<>(); 
         stack.add(root);
         root.visited = true;
         int adding = 0;
         while (!stack.isEmpty()) {
             Node current = stack.pop();
+            nodosIndex.add(current);
             HashMap<Integer, Node> neighbors = current.getAdjacentNodes();
             Set set = neighbors.entrySet();
             Iterator it = set.iterator();
@@ -537,10 +541,31 @@ public class Graph {
                     neighbor.visited = true;
                 }
             }
-            if (!stack.isEmpty()){ 
-                createTreeEdge(adding, current, stack.peek(), "");
+        }
+        Deque<Node> reverseDeque = new LinkedList<>();
+        while (!nodosIndex.isEmpty()) {
+            Node current = nodosIndex.poll();
+            //reverseDeque.add(current);
+            reverseDeque.addFirst(current);
+            if (!nodosIndex.isEmpty()){
+                if (current.adjacentNodes.containsValue(nodosIndex.peek())) {
+                    System.out.println(current.getId()+"->"+nodosIndex.peek().getId());
+                    createTreeEdge(adding, current, nodosIndex.peek(), "");
+                    adding++;
+                } else {
+                    Iterator it = reverseDeque.iterator();
+                    it.next();
+                    while (it.hasNext()) {
+                        Node previousNode = (Node)it.next();
+                        if (previousNode.adjacentNodes.containsValue(nodosIndex.peek())) {
+                            System.out.println(previousNode.getId()+"->"+nodosIndex.peek().getId());
+                            createTreeEdge(adding, previousNode, nodosIndex.peek(), "");
+                            adding++;
+                            break;
+                        }
+                    }
+                }
             }
-            adding++;
         }
     }
 }

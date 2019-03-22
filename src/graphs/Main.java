@@ -343,7 +343,7 @@ public class Main{
         jbLoadGraph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Under Construction", "Information", JOptionPane.INFORMATION_MESSAGE);
+                //JOptionPane.showMessageDialog(null, "Under Construction", "Information", JOptionPane.INFORMATION_MESSAGE);
                 grafo.readGraph(grafo);
                 jbSearchAlg.setEnabled(true);
             }
