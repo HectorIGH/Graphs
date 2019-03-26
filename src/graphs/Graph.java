@@ -440,7 +440,7 @@ public class Graph {
                     int nodes = 0;                
                     File selectedFile = fc.getSelectedFile();
                     Path path = Paths.get(selectedFile.getAbsolutePath());
-                    System.out.println("Selected file: " + path.toString());
+                    //System.out.println("Selected file: " + path.toString());
                     List<String> lines = Collections.emptyList();
                     try {
                         lines = Files.readAllLines(path, StandardCharsets.UTF_8);
@@ -487,7 +487,7 @@ public class Graph {
                                 edges++;
                             }
                         }
-                        System.out.println(Edges.size() +":" + Nodes.size());
+                        //System.out.println(Edges.size() +":" + Nodes.size());
                     } catch(IOException e) {
                         JOptionPane.showMessageDialog(null, "The file could not be loaded.", "File not loaded", JOptionPane.INFORMATION_MESSAGE);
                         return null;
