@@ -5,6 +5,8 @@
  */
 package graphs;
 
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,8 +15,13 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -25,6 +32,7 @@ public class Graph {
     HashMap<Integer, Node> Nodes = new HashMap<>();
     HashMap<Integer, Edge> Edges = new HashMap<>();
     HashMap<Integer, Edge> treeEdges = new HashMap<>();
+    int loadedGraphDirected = 0;
     
     public Graph() {
         //Constructor with no parameters
@@ -374,7 +382,7 @@ public class Graph {
             try (FileWriter fw = new FileWriter(name+".gv");
                 BufferedWriter bw = new BufferedWriter(fw);
                 PrintWriter out = new PrintWriter(bw)) {
-                out.println("strict digraph{");
+                out.println("strict graph{");
                 out.flush();
         
                 Set setE = EG.entrySet();
@@ -386,7 +394,7 @@ public class Graph {
                     HashMap<Integer, Node> anode = edge.getNodes();
                     Node A = anode.get(1);
                     Node B = anode.get(2);
-                    out.println("   \"" + A.getId() + "\"->\"" + B.getId() + "\"");
+                    out.println("   \"" + A.getId() + "\"--\"" + B.getId() + "\"");
                     out.flush();
                 }
                 out.println("}");
@@ -406,64 +414,93 @@ public class Graph {
     public Graph readGraph(Graph grafo) {
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new File(System.getProperty("user.home")));
-        int dir = 0;
-        int edges = 0;
-        int nodes = 0;
+        JFrame f = new JFrame("");
+        JPanel p = new JPanel(new GridLayout(0,1));
+        f.setLocationRelativeTo(null);
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fc.getSelectedFile();
-            Path path = Paths.get(selectedFile.getAbsolutePath());
-            System.out.println("Selected file: " + path.toString());
-            List<String> lines = Collections.emptyList();
-            try {
-                lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-                for (String line : lines) {
-                    if (line.contains("--") || line.contains("->")) {
-                        String[] currentLine = {""};
-                        if (line.contains("--")) {
-                            dir = 0;
-                            currentLine = line.replace("\"", "").trim().split("--");
+            SwingWorker<Void, Void> worker;
+            final JDialog dialog = new JDialog(f, true);
+            dialog.setUndecorated(true);
+            dialog.setLocationRelativeTo(null);
+            dialog.setLocation(f.getLocation().x + f.getSize().width / 4, f.getLocation().y + f.getSize().height / 4);
+            JProgressBar bar = new JProgressBar();
+            bar.setIndeterminate(true);
+            bar.setStringPainted(true);
+            bar.setBackground(Color.green);
+            bar.setString("Loading. Please wait...");
+            dialog.add(bar);
+            dialog.pack();
+            
+            worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    int dir = 0;
+                    int edges = 0;
+                    int nodes = 0;                
+                    File selectedFile = fc.getSelectedFile();
+                    Path path = Paths.get(selectedFile.getAbsolutePath());
+                    System.out.println("Selected file: " + path.toString());
+                    List<String> lines = Collections.emptyList();
+                    try {
+                        lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+                        for (String line : lines) {
+                            if (line.contains("--") || line.contains("->")) {
+                                String[] currentLine = {""};
+                                if (line.contains("--")) {
+                                    dir = 0;
+                                    currentLine = line.replace("\"", "").trim().split("--");
+                                }
+                                if (line.contains("->")) {
+                                    dir = 1;
+                                    currentLine = line.replace("\"", "").trim().split("->");
+                                }
+                                String[] nodeL = currentLine[0].split(",| ");
+                                String[] nodeR = currentLine[1].split(",| ");
+                                int izq = Integer.parseInt(nodeL[0]);
+                                if (nodes < izq) {
+                                    nodes = izq;
+                                }
+                                int der = Integer.parseInt(nodeR[0]);
+                                if (nodes < der) {
+                                    nodes = der;
+                                }
+                            }
                         }
-                        if (line.contains("->")) {
-                            dir = 1;
-                            currentLine = line.replace("\"", "").trim().split("->");
+                        createNodes(nodes + 1);
+                        for (String line : lines) {
+                            if(line.contains("--") || line.contains("->")) {
+                                String[] currentLine = {""};
+                                if (line.contains("--")) {
+                                    dir = 0;
+                                    currentLine = line.replace("\"", "").trim().split("--");
+                                }
+                                if (line.contains("->")) {
+                                    dir = 1;
+                                    currentLine = line.replace("\"", "").trim().split("->");
+                                }
+                                String[] nodeL = currentLine[0].split(",| ");
+                                String[] nodeR = currentLine[1].split(",| ");
+                                int izq = Integer.parseInt(nodeL[0]);
+                                int der = Integer.parseInt(nodeR[0]);
+                                createEdge(edges, grafo.Nodes.get(izq), grafo.Nodes.get(der), "Connects node " + izq + " and node " + der);
+                                edges++;
+                            }
                         }
-                        String[] nodeL = currentLine[0].split(",| ");
-                        String[] nodeR = currentLine[1].split(",| ");
-                        int izq = Integer.parseInt(nodeL[0]);
-                        if (nodes < izq) {
-                            nodes = izq;
-                        }
-                        int der = Integer.parseInt(nodeR[0]);
-                        if (nodes < der) {
-                            nodes = der;
-                        }
+                        System.out.println(Edges.size() +":" + Nodes.size());
+                    } catch(IOException e) {
+                        JOptionPane.showMessageDialog(null, "The file could not be loaded.", "File not loaded", JOptionPane.INFORMATION_MESSAGE);
+                        return null;
                     }
+                    return null;
                 }
-                createNodes(nodes + 1);
-                for (String line : lines) {
-                    if(line.contains("--") || line.contains("->")) {
-                        String[] currentLine = {""};
-                        if (line.contains("--")) {
-                            dir = 0;
-                            currentLine = line.replace("\"", "").trim().split("--");
-                        }
-                        if (line.contains("->")) {
-                            dir = 1;
-                            currentLine = line.replace("\"", "").trim().split("->");
-                        }
-                        String[] nodeL = currentLine[0].split(",| ");
-                        String[] nodeR = currentLine[1].split(",| ");
-                        int izq = Integer.parseInt(nodeL[0]);
-                        int der = Integer.parseInt(nodeR[0]);
-                        createEdge(edges, grafo.Nodes.get(izq), grafo.Nodes.get(der), "Connects node " + izq + " and node " + der);
-                        edges++;
-                    }
+                @Override
+                protected void done() {
+                    dialog.dispose();
                 }
-                System.out.println(Edges.size() +":" + Nodes.size());
-            } catch(IOException e) {
-                JOptionPane.showMessageDialog(null, "The file could not be loaded.", "File not loaded", JOptionPane.INFORMATION_MESSAGE);
-                return null;
-            }
+            };
+            worker.execute();
+            dialog.setVisible(true);
         }        
         return this;
     }
@@ -476,6 +513,10 @@ public class Graph {
             Node node = (Node)mentry.getValue();
             node.visited = false;
         }
+    }
+    
+    public void resetTree(Graph grafo) {
+        grafo.treeEdges.clear();
     }
     
     public void BFS(Graph grafo, Node root) {
