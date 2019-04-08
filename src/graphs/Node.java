@@ -18,6 +18,7 @@ public class Node {
     double x,y;
     boolean visited = false;
     HashMap<Integer, Node> adjacentNodes = new HashMap<>();
+    double weight = 0;
     
     public Node() {
         // Construct with no parameter

@@ -50,13 +50,17 @@ public class Graph {
         return 0;
     }
     
-    public int createEdge(int id, Node a, Node b, String data) {
+    public int createEdge(int id, Node a, Node b, String data, int dir) {
         Edge edge = new Edge(a, b, data);
         Edges.put(id, edge);
         a.updateGrad();
         b.updateGrad();
-        a.setAdjacent(b);
-        b.setAdjacent(a);
+        if (dir == 0) {
+            a.setAdjacent(b);
+            b.setAdjacent(a);
+        } else {
+            a.setAdjacent(b);
+        }
         return 0;
     }
     
@@ -123,7 +127,7 @@ public class Graph {
                 }
             }
             if (create != 0) {
-                createEdge(j, a, b, "Connects node " + a.getId()+" and node " + b.getId()); // Creates edge
+                createEdge(j, a, b, "Connects node " + a.getId()+" and node " + b.getId(), dir); // Creates edge
                 create = 1; // Reset condition
                 //System.out.println("Estoy creando aristas.");
             }
@@ -167,7 +171,7 @@ public class Graph {
                         }
                     }
                     if(create != 0) {
-                        createEdge(NE, a, b, "Connects node " + a.getId() +" and node " + b.getId());
+                        createEdge(NE, a, b, "Connects node " + a.getId() +" and node " + b.getId(), dir);
                         NE++;
                         create = 1;
                     }
@@ -194,7 +198,7 @@ public class Graph {
                 }
             }
             if(create != 0) {
-                createEdge(NE, a, b, "Connects node " + a.getId() +" and node " + b.getId());
+                createEdge(NE, a, b, "Connects node " + a.getId() +" and node " + b.getId(), dir);
             }
         }
         //System.out.println(Edges.size());
@@ -250,7 +254,7 @@ public class Graph {
                         }
                     }
                     if(create != 0) {
-                        createEdge(NE, a, b, "Connects node " + a.getId() +" and node " + b.getId());
+                        createEdge(NE, a, b, "Connects node " + a.getId() +" and node " + b.getId(), dir);
                         NE++;
                         create = 1;
                     }
@@ -281,7 +285,7 @@ public class Graph {
                 }
             }
             if(create != 0) {
-                createEdge(NE, a, b, "Connects node " + a.getId() +" and node " + b.getId());
+                createEdge(NE, a, b, "Connects node " + a.getId() +" and node " + b.getId(), dir);
             }
         }
         //System.out.println(Edges.size());
@@ -304,7 +308,7 @@ public class Graph {
                 if (pr > p) {
                     Node A = Nodes.get(Nodes.size() - 1);
                     Node B = Nodes.get(j);
-                    createEdge(Ne, A, B, "Connects node " + A.getId() + " and node " + B.getId());
+                    createEdge(Ne, A, B, "Connects node " + A.getId() + " and node " + B.getId(), dir);
                     Ne++;
                 }
             }
@@ -483,7 +487,7 @@ public class Graph {
                                 String[] nodeR = currentLine[1].split(",| ");
                                 int izq = Integer.parseInt(nodeL[0]);
                                 int der = Integer.parseInt(nodeR[0]);
-                                createEdge(edges, grafo.Nodes.get(izq), grafo.Nodes.get(der), "Connects node " + izq + " and node " + der);
+                                createEdge(edges, grafo.Nodes.get(izq), grafo.Nodes.get(der), "Connects node " + izq + " and node " + der, dir);
                                 edges++;
                             }
                         }
@@ -608,5 +612,23 @@ public class Graph {
                 }
             }
         }
+    }
+    
+    public void setEdgeWeights(double min, double max, boolean onlyInteger) {
+        Set set = Edges.entrySet();
+        Iterator it = set.iterator();
+        while(it.hasNext()) {
+            Map.Entry mentry = (Map.Entry)it.next();
+            Edge edge = (Edge)mentry.getValue();
+            if(onlyInteger) {
+                edge.weight = min + (int)(Math.random() * ((max - min) + 1));
+            } else {
+                edge.weight = min + (Math.random() * ((max - min) + 1));
+            }
+        }
+    }
+    
+    public void Dijkstra(Graph grafo, Node origin) {
+        // TO-DO Dijkstra's algorithm
     }
 }

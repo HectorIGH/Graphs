@@ -50,6 +50,10 @@ public class Main{
         JButton jbSearchAlg = new JButton("Search Algorithms");
         jbSearchAlg.setActionCommand("searchAlgorithms");
         jbSearchAlg.setEnabled(false);
+        
+        JButton jbDijksAlg = new JButton("Dijkstra's algorithm");
+        jbDijksAlg.setActionCommand("dijkstrasalgorithm");
+        jbDijksAlg.setEnabled(false);
 
         JMenu jmHelp = new JMenu("Help");
         JMenuItem jmiAbout = new JMenuItem("About");
@@ -334,6 +338,7 @@ public class Main{
                             break;
                         }
                     jbSearchAlg.setEnabled(true);
+                    jbDijksAlg.setEnabled(true);
                 } else {
                     //System.out.println("Cancelled");
                 }
@@ -348,6 +353,7 @@ public class Main{
                 grafo.resetTree(grafo);
                 grafo.readGraph(grafo);
                 jbSearchAlg.setEnabled(true);
+                jbDijksAlg.setEnabled(true);
             }
         });
         
@@ -369,7 +375,7 @@ public class Main{
                     public void actionPerformed(ActionEvent e) {
                         int alg = comboAlgo.getSelectedIndex();
                         int node = (int)JSnodo.getValue();
-                        System.out.println(alg+":"+node);
+                        //System.out.println(alg+":"+node);
                         switch (alg) {
                             case 0:
                                 grafo.BFS(grafo, grafo.Nodes.get(node));
@@ -398,9 +404,44 @@ public class Main{
             }
         });
         
+        jbDijksAlg.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panel = new JPanel(new GridLayout(0, 1));
+                JSpinner JSminWeight = new JSpinner(new SpinnerNumberModel(1, 0, Integer.MAX_VALUE, 0.5));
+                JSpinner JSmaxWeight = new JSpinner(new SpinnerNumberModel(1, 0, Integer.MAX_VALUE, 0.5));
+                JCheckBox JCBinteger = new JCheckBox("Check if you want only integer weights.", true);
+                JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
+                JButton JBalgo = new JButton("Run the algorithm.");
+                panel.add(new JLabel("Select the origin node."));
+                panel.add(JSnodo);
+                panel.add(new JLabel("Set the minimum weight to be randomly applied to the edges."));
+                panel.add(JSminWeight);
+                panel.add(new JLabel("Set the maximum weight to be randomly applied to the edges."));
+                panel.add(JSmaxWeight);
+                panel.add(JCBinteger);
+                panel.add(JBalgo);
+                JBalgo.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        double min = (double)JSminWeight.getValue();
+                        double max = (double)JSmaxWeight.getValue();
+                        boolean onlyInteger = JCBinteger.isSelected();
+                        int node = (int)JSnodo.getValue();
+                        System.out.println("Range: "+min+":"+max+". Nodo: "+node+". Only integer weights: " + onlyInteger);
+                        grafo.setEdgeWeights(min, max, onlyInteger);
+                        grafo.Dijkstra(grafo, grafo.Nodes.get(node));
+                    }
+                });
+                String[] options = {"OK"};
+                JOptionPane.showOptionDialog(null, panel, "Dijkstra's algorithm", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+            }
+        });
+        
         p.add(jbGrafos);
         p.add(jbLoadGraph);
         p.add(jbSearchAlg);
+        p.add(jbDijksAlg);
         f.setSize(300, 100 * p.getComponentCount());
         f.add(p);
 
