@@ -6,19 +6,20 @@
 package graphs;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  *
  * @author Hector Ivan Garcia-Hernandez
  */
-public class Node {
+public class Node implements Comparable<Node> {
     
     int id, grad = 0;
     String name, data;
     double x,y;
     boolean visited = false;
     HashMap<Integer, Node> adjacentNodes = new HashMap<>();
-    double weight = 0;
+    double cost = 0;
     
     public Node() {
         // Construct with no parameter
@@ -89,5 +90,41 @@ public class Node {
     
     public int getGrad() {
         return grad;
+    }
+    
+    public void setCost(double cost) {
+        this.cost = cost;
+    }
+    
+    public double getCost() {
+        return cost;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Node nodo = (Node) o;
+        return Double.compare(nodo.cost, cost) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int)Double.hashCode(this.cost);
+    }
+
+    @Override
+    public int compareTo(Node node) {
+        if (this.getCost() > node.getCost()) {
+            return 1;
+        } else if (this.getCost() < node.getCost()) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 }

@@ -628,7 +628,29 @@ public class Graph {
         }
     }
     
-    public void Dijkstra(Graph grafo, Node origin) {
-        // TO-DO Dijkstra's algorithm
+    public void Dijkstra(Graph grafo, Node s) {
+        Set<Node> settled = new HashSet<>();
+        PriorityQueue<Node> pq = new PriorityQueue<>();
+        // Set source node dist as 0
+        // HashMap for keeping track of predecessors
+        HashMap<Node, Node> prev = new HashMap<>();
+        prev.put(s, null);
+        // HashMap for keeping track of distances
+        HashMap<Node, Integer> dist = new HashMap<>();
+        dist.put(s, 0);
+        Set set = Nodes.entrySet();
+        Iterator it = set.iterator();
+        while(it.hasNext()) {
+            Map.Entry mentry = (Map.Entry)it.next();
+            Node nodo = (Node)mentry.getValue();
+            // Set nodes not source cost as infinite
+            dist.put(nodo, Integer.MAX_VALUE);
+        }
+        pq.add(s);
+        while(settled.size() != Nodes.size()) {
+            Node u = pq.remove();
+            settled.add(u);
+            
+        }
     }
 }
