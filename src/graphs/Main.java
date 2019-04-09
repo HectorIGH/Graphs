@@ -409,7 +409,7 @@ public class Main{
             public void actionPerformed(ActionEvent e) {
                 JPanel panel = new JPanel(new GridLayout(0, 1));
                 JSpinner JSminWeight = new JSpinner(new SpinnerNumberModel(1, 0, Integer.MAX_VALUE, 0.5));
-                JSpinner JSmaxWeight = new JSpinner(new SpinnerNumberModel(1, 0, Integer.MAX_VALUE, 0.5));
+                JSpinner JSmaxWeight = new JSpinner(new SpinnerNumberModel(10, 0, Integer.MAX_VALUE, 0.5));
                 JCheckBox JCBinteger = new JCheckBox("Check if you want only integer weights.", true);
                 JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
                 JButton JBalgo = new JButton("Run the algorithm.");

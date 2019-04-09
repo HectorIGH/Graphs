@@ -629,28 +629,89 @@ public class Graph {
     }
     
     public void Dijkstra(Graph grafo, Node s) {
-        Set<Node> settled = new HashSet<>();
+        int key = -1;
+        Edge edge = new Edge();
+        Set<Integer> settled = new HashSet<>();
         PriorityQueue<Node> pq = new PriorityQueue<>();
         // Set source node dist as 0
         // HashMap for keeping track of predecessors
-        HashMap<Node, Node> prev = new HashMap<>();
-        prev.put(s, null);
+        HashMap<Integer, Integer> prev = new HashMap<>();
+        prev.put(s.getId(), Integer.MIN_VALUE);
         // HashMap for keeping track of distances
-        HashMap<Node, Integer> dist = new HashMap<>();
-        dist.put(s, 0);
+        HashMap<Integer, Double> dist = new HashMap<>();
+        dist.put(s.getId(), 0.0);
         Set set = Nodes.entrySet();
         Iterator it = set.iterator();
         while(it.hasNext()) {
             Map.Entry mentry = (Map.Entry)it.next();
             Node nodo = (Node)mentry.getValue();
             // Set nodes not source cost as infinite
-            dist.put(nodo, Integer.MAX_VALUE);
+            if (nodo.getId() != s.getId()) {
+                dist.put(nodo.getId(), Double.MAX_VALUE);
+            }
         }
         pq.add(s);
-        while(settled.size() != Nodes.size()) {
+        System.out.println(pq.size());
+        while(!pq.isEmpty()) {            
+
             Node u = pq.remove();
-            settled.add(u);
-            
+            settled.add(u.getId());
+            double edgeDistance = -1.0;
+            double newDistance = -1.0;
+            Set set1 = u.adjacentNodes.entrySet();
+            Iterator ite = set1.iterator();
+            while(ite.hasNext()) {
+                Map.Entry mentry = (Map.Entry)ite.next();
+                Node v = (Node)mentry.getValue();
+                //System.out.print(v.getId());
+                if(!settled.contains(v.getId())) {
+                    edge = new Edge(u, v, "Connects node " + u.getId() + " and node " + v.getId());
+                    //Edges.containsValue(edge);
+                    //edgeDistance = grafo.Edges.get(0).getWeight();
+                    Set setedge = Edges.entrySet();
+                    Iterator iteratorEdge = setedge.iterator();
+                    while(iteratorEdge.hasNext()) {
+                        Map.Entry mentryEdge = (Map.Entry)iteratorEdge.next();
+                        Edge edgeCompara = (Edge)mentryEdge.getValue();
+                        //System.out.println(edgeCompara.a.getId() + ":" + edgeCompara.getNodes().get(2).getId());
+                        if (edge.equals(edgeCompara)) {
+                        //if ((u.getId() == edgeCompara.getNodes().get(0).getId()) && (v.getId() == edgeCompara.getNodes().get(0).getId())) {
+                            key = (int)mentryEdge.getKey();
+                            edgeDistance = edgeCompara.getWeight();
+                            //System.out.println("Aquí sí entro. La llave es :" + key + "y el peso es: " + edgeCompara.getWeight());
+                            break;
+                        }
+                    }
+                    //edgeDistance = v.getCost();
+                    newDistance = dist.get(u.getId()) + edgeDistance;
+                    if(newDistance < dist.get(v.getId())) {
+                        dist.put(v.getId(), newDistance);
+                        prev.put(v.getId(), u.getId());
+                    }
+                    pq.add(v);
+                }
+            }
+        }
+        Set se = Edges.entrySet();
+        Iterator i = se.iterator();
+        while(i.hasNext()) {
+            Map.Entry mentr = (Map.Entry)i.next();
+            Edge e = (Edge)mentr.getValue();
+            System.out.println("Edge: "+e.a.getId()+" -> "+e.b.getId() + "eith weight: "+e.getWeight());
+        }
+        Set sett = dist.entrySet();
+        Iterator itt = sett.iterator();
+        while(itt.hasNext()) {
+            Map.Entry mentry = (Map.Entry)itt.next();
+            System.out.println("Nodo: " + mentry.getKey() + " Distance: " + mentry.getValue());
+        }
+        Set zet = prev.entrySet();
+        Iterator j = zet.iterator();
+        while(j.hasNext()) {
+            Map.Entry entry = (Map.Entry)j.next();
+            int a = (int)entry.getKey();
+            int b = (int)entry.getValue();
+            System.out.println("Nodo: " + a +" -> "+b);
         }
     }
 }

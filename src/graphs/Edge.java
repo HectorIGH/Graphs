@@ -63,4 +63,25 @@ public class Edge {
     public double getWeight() {
         return weight;
     }
+    
+    // Overriding equals() to compare two Edge objects
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if(!(o instanceof Edge)) {
+            return false;
+        }
+        Edge ed = (Edge)o;
+        return Double.compare(a.getId(), ed.getNodes().get(1).getId()) == 0 && Double.compare(b.getId(), ed.getNodes().get(2).getId()) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + Objects.hashCode(this.a);
+        hash = 97 * hash + Objects.hashCode(this.b);
+        return hash;
+    }
 }
