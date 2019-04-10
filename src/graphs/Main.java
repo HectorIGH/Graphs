@@ -51,6 +51,10 @@ public class Main{
         jbSearchAlg.setActionCommand("searchAlgorithms");
         jbSearchAlg.setEnabled(false);
         
+        JButton jbAddWeights = new JButton("Add weight to edges");
+        jbAddWeights.setActionCommand("addWeight");
+        jbAddWeights.setEnabled(false);
+        
         JButton jbDijksAlg = new JButton("Dijkstra's algorithm");
         jbDijksAlg.setActionCommand("dijkstrasalgorithm");
         jbDijksAlg.setEnabled(false);
@@ -338,6 +342,7 @@ public class Main{
                             break;
                         }
                     jbSearchAlg.setEnabled(true);
+                    jbAddWeights.setEnabled(true);
                     jbDijksAlg.setEnabled(true);
                 } else {
                     //System.out.println("Cancelled");
@@ -351,16 +356,22 @@ public class Main{
                 //JOptionPane.showMessageDialog(null, "Under Construction", "Information", JOptionPane.INFORMATION_MESSAGE);
                 grafo.resetNodes(grafo);
                 grafo.resetTree(grafo);
-                grafo.readGraph(grafo);
-                jbSearchAlg.setEnabled(true);
-                jbDijksAlg.setEnabled(true);
+                int read = grafo.readGraph(grafo);
+                if (read == 1) {
+                    jbSearchAlg.setEnabled(true);
+                    jbAddWeights.setEnabled(true);
+                    jbDijksAlg.setEnabled(true);
+                }
             }
         });
         
         jbSearchAlg.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                JFrame f = new JFrame("");
                 JPanel panel = new JPanel(new GridLayout(0, 1));
+                f.setLocationRelativeTo(null);
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 String[] algos = {"BFS", "Recursive DFS", "Iterative DFS"};
                 JComboBox<String> comboAlgo = new JComboBox<>(algos);
                 JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
@@ -375,25 +386,72 @@ public class Main{
                     public void actionPerformed(ActionEvent e) {
                         int alg = comboAlgo.getSelectedIndex();
                         int node = (int)JSnodo.getValue();
-                        //System.out.println(alg+":"+node);
+                        SwingWorker<Void, Void> worker;
+                        final JDialog dialog = new JDialog(f, true);
+                        dialog.setUndecorated(true);
+                        dialog.setLocationRelativeTo(null);
+                        dialog.setLocation(f.getLocation().x + f.getSize().width / 4, f.getLocation().y + f.getSize().height / 4);
+                        JProgressBar bar = new JProgressBar();
+                        bar.setIndeterminate(true);
+                        bar.setStringPainted(true);
+                        bar.setBackground(Color.green);
+                        bar.setString("Calculating. Please wait...");
+                        dialog.add(bar);
+                        dialog.pack();
                         switch (alg) {
                             case 0:
-                                grafo.BFS(grafo, grafo.Nodes.get(node));
-                                grafo.graphTree(grafo, "BFSTree");
-                                grafo.resetNodes(grafo);
-                                grafo.resetTree(grafo);
+                                worker = new SwingWorker<Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground() {
+                                        grafo.BFS(grafo, grafo.Nodes.get(node));
+                                        grafo.graphTree(grafo, "BFSTree");
+                                        grafo.resetNodes(grafo);
+                                        grafo.resetTree(grafo);
+                                        return null;
+                                    }
+                                    @Override
+                                    protected void done() {
+                                        dialog.dispose();
+                                    }
+                                };
+                                worker.execute();
+                                dialog.setVisible(true);
                                 break;
                             case 1:
-                                grafo.DFS_R(grafo, grafo.Nodes.get(node));
-                                grafo.graphTree(grafo, "DFS_Recursive_Tree");
-                                grafo.resetNodes(grafo);
-                                grafo.resetTree(grafo);
+                                worker = new SwingWorker<Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground() {
+                                        grafo.DFS_R(grafo, grafo.Nodes.get(node));
+                                        grafo.graphTree(grafo, "DFS_Recursive_Tree");
+                                        grafo.resetNodes(grafo);
+                                        grafo.resetTree(grafo);
+                                        return null;
+                                    }
+                                    @Override
+                                    protected void done() {
+                                        dialog.dispose();
+                                    }
+                                };
+                                worker.execute();
+                                dialog.setVisible(true);
                                 break;
                             case 2:
-                                grafo.DFS_I(grafo, grafo.Nodes.get(node));
-                                grafo.graphTree(grafo, "DFS_Iterative_Tree");
-                                grafo.resetNodes(grafo);
-                                grafo.resetTree(grafo);
+                                worker = new SwingWorker<Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground() {
+                                        grafo.DFS_I(grafo, grafo.Nodes.get(node));
+                                        grafo.graphTree(grafo, "DFS_Iterative_Tree");
+                                        grafo.resetNodes(grafo);
+                                        grafo.resetTree(grafo);
+                                        return null;
+                                    }
+                                    @Override
+                                    protected void done() {
+                                        dialog.dispose();
+                                    }
+                                };
+                                worker.execute();
+                                dialog.setVisible(true);
                                 break;
                         }
                     }
@@ -404,17 +462,17 @@ public class Main{
             }
         });
         
-        jbDijksAlg.addActionListener(new ActionListener() {
+        jbAddWeights.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                JFrame f = new JFrame("");
+                f.setLocationRelativeTo(null);
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 JPanel panel = new JPanel(new GridLayout(0, 1));
                 JSpinner JSminWeight = new JSpinner(new SpinnerNumberModel(1, 0, Integer.MAX_VALUE, 0.5));
                 JSpinner JSmaxWeight = new JSpinner(new SpinnerNumberModel(10, 0, Integer.MAX_VALUE, 0.5));
                 JCheckBox JCBinteger = new JCheckBox("Check if you want only integer weights.", true);
-                JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
-                JButton JBalgo = new JButton("Run the algorithm.");
-                panel.add(new JLabel("Select the origin node."));
-                panel.add(JSnodo);
+                JButton JBalgo = new JButton("Set weights.");
                 panel.add(new JLabel("Set the minimum weight to be randomly applied to the edges."));
                 panel.add(JSminWeight);
                 panel.add(new JLabel("Set the maximum weight to be randomly applied to the edges."));
@@ -427,10 +485,79 @@ public class Main{
                         double min = (double)JSminWeight.getValue();
                         double max = (double)JSmaxWeight.getValue();
                         boolean onlyInteger = JCBinteger.isSelected();
+                        SwingWorker<Void, Void> worker;
+                        final JDialog dialog = new JDialog(f, true);
+                        dialog.setUndecorated(true);
+                        dialog.setLocationRelativeTo(null);
+                        dialog.setLocation(f.getLocation().x + f.getSize().width / 4, f.getLocation().y + f.getSize().height / 4);
+                        JProgressBar bar = new JProgressBar();
+                        bar.setIndeterminate(true);
+                        bar.setStringPainted(true);
+                        bar.setBackground(Color.green);
+                        bar.setString("Adding weights. Please wait...");
+                        dialog.add(bar);
+                        dialog.pack();
+                        worker = new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() {
+                                grafo.setEdgeWeights(min, max, onlyInteger);
+                                return null;
+                            }
+                            @Override
+                            protected void done() {
+                                dialog.dispose();
+                            }
+                        };
+                        worker.execute();
+                        dialog.setVisible(true);
+                    }
+                });
+                String[] options = {"OK"};
+                JOptionPane.showOptionDialog(null, panel, "Setting weights", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+            }
+        });
+        
+        jbDijksAlg.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame f = new JFrame("");
+                f.setLocationRelativeTo(null);
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                JPanel panel = new JPanel(new GridLayout(0, 1));
+                JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
+                JButton JBalgo = new JButton("Run the algorithm.");
+                panel.add(new JLabel("Select the origin node."));
+                panel.add(JSnodo);
+                panel.add(JBalgo);
+                JBalgo.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
                         int node = (int)JSnodo.getValue();
-                        System.out.println("Range: "+min+":"+max+". Nodo: "+node+". Only integer weights: " + onlyInteger);
-                        grafo.setEdgeWeights(min, max, onlyInteger);
-                        grafo.Dijkstra(grafo, grafo.Nodes.get(node));
+                        SwingWorker<Void, Void> worker;
+                        final JDialog dialog = new JDialog(f, true);
+                        dialog.setUndecorated(true);
+                        dialog.setLocationRelativeTo(null);
+                        dialog.setLocation(f.getLocation().x + f.getSize().width / 4, f.getLocation().y + f.getSize().height / 4);
+                        JProgressBar bar = new JProgressBar();
+                        bar.setIndeterminate(true);
+                        bar.setStringPainted(true);
+                        bar.setBackground(Color.green);
+                        bar.setString("Calculating. Please wait...");
+                        dialog.add(bar);
+                        dialog.pack();
+                        worker = new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() {
+                                grafo.Dijkstra(grafo, grafo.Nodes.get(node));
+                                return null;
+                            }
+                            @Override
+                            protected void done() {
+                                dialog.dispose();
+                            }
+                        };
+                        worker.execute();
+                        dialog.setVisible(true);
                     }
                 });
                 String[] options = {"OK"};
@@ -441,6 +568,7 @@ public class Main{
         p.add(jbGrafos);
         p.add(jbLoadGraph);
         p.add(jbSearchAlg);
+        p.add(jbAddWeights);
         p.add(jbDijksAlg);
         f.setSize(300, 100 * p.getComponentCount());
         f.add(p);

@@ -16,7 +16,7 @@ public class Edge {
     Node a;
     Node b;
     String data;
-    double weight;
+    double weight = 1.0;
     
     public Edge() {
         // Constructor with no parameters

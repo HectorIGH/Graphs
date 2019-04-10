@@ -28,28 +28,29 @@ import javax.swing.SwingWorker;
  * @author Hector Ivan Garcia-Hernandez
  */
 public class Graph {
-    
+
     HashMap<Integer, Node> Nodes = new HashMap<>();
     HashMap<Integer, Edge> Edges = new HashMap<>();
     HashMap<Integer, Edge> treeEdges = new HashMap<>();
     int loadedGraphDirected = 0;
-    
+    int dirigido = 0;
+
     public Graph() {
         //Constructor with no parameters
     }
-    
+
     public int createNode(int id, String name, String data) {
         Node nodo = new Node(id, name, data);
         Nodes.put(id, nodo);
         return 0;
     }
-    
+
     public int createNodeXY(int id, String name, double x, double y, String data) {
         Node nodo = new Node(id, name, x, y, data);
         Nodes.put(id, nodo);
         return 0;
     }
-    
+
     public int createEdge(int id, Node a, Node b, String data, int dir) {
         Edge edge = new Edge(a, b, data);
         Edges.put(id, edge);
@@ -63,24 +64,24 @@ public class Graph {
         }
         return 0;
     }
-    
+
     public int createTreeEdge(int id, Node a, Node b, String data) {
         Edge edge = new Edge(a, b, data);
         treeEdges.put(id, edge);
         return 0;
     }
-    
+
     public int getGradNode(Node node) {
         return node.getGrad();
     }
-    
+
     public void createNodes(int n) {
         int i;
         for (i = 0; i < n; i++) { // Creates n nodes
             createNode(i, "Node " + i, "No data");
         }
     }
-    
+
     public void createNodesXY(int n) {
         int i;
         double x,y;
@@ -91,7 +92,7 @@ public class Graph {
             createNodeXY(i, "Node " + i, x, y, "No data");
         }
     }
-    
+
     public Graph Erdos(int n, int m, int dir, int cic) {
         if (m > n*(n+1)/2) {
             return null;
@@ -99,7 +100,7 @@ public class Graph {
         Random rand = new Random();
         int j = 0, indexA, indexB, create = 1;
         createNodes(n);
-   
+
         //for (j = 0; j < m; j++) { // Creates m edges
         while(Edges.size() < m) {
             indexA = rand.nextInt(n); // Choose at random node A
@@ -135,7 +136,7 @@ public class Graph {
         }
         return this;
     }
-    
+
     public Graph Gilbert(int n, double p, int dir, int cic) {
         if (p > 1) {
             return null;
@@ -144,7 +145,7 @@ public class Graph {
         int i, j, NE = 0, create = 1;
         double probability;
         createNodes(n);
-   
+
         for(i = 0; i < n; i++) { // We iterate as long as there are nodes left
             for(j = 0; j < n; j++){
                 if (cic == 0 && (i == j)) { // Loops not allowed
@@ -204,14 +205,14 @@ public class Graph {
         //System.out.println(Edges.size());
         return this;
     }
-    
+
     public Graph Geo(int n, double r, int dir, int cic) {
         if (r > 1) {
             return null;
         }
         int i, j, NE = 0, create = 1;
         createNodesXY(n);
-        
+
         List index = new ArrayList();
         List jndex = new ArrayList();
         for (int k = 0; k < n; k++) {
@@ -221,7 +222,7 @@ public class Graph {
         Collections.shuffle(index);
         Collections.shuffle(jndex);
         int I, J;
-        
+
         for(i = 0; i < n; i++) { // We iterate as long as there are nodes left
             I = (int)index.get(i);
             for(j = 0; j < n; j++){
@@ -291,7 +292,7 @@ public class Graph {
         //System.out.println(Edges.size());
         return this;
     }
-    
+
     public Graph Barabasi(int n, int d, double g, int dir, int cic) {
         int Ne = 0;
         double p = 0, pr;
@@ -315,15 +316,15 @@ public class Graph {
         }
         return this;
     }
-    
+
     public HashMap<Integer, Node> getNodesGraph() {
         return Nodes;
     }
-    
+
     public HashMap<Integer, Edge> getEdgesGraph() {
         return Edges;
     }
-    
+
     public int graphGraph(Graph grapho, int dir, String name) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
@@ -340,7 +341,7 @@ public class Graph {
                     out.println("strict digraph{");
                     out.flush();
                 }
-        
+
             Set setE = EG.entrySet();
             Iterator it = setE.iterator();
             while(it.hasNext()) {
@@ -372,11 +373,11 @@ public class Graph {
         }
         return 1;
     }
-    
+
     public HashMap<Integer, Edge> getEdgesTree() {
         return treeEdges;
     }
-    
+
     public int graphTree(Graph grafo, String name) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
@@ -388,7 +389,7 @@ public class Graph {
                 PrintWriter out = new PrintWriter(bw)) {
                 out.println("strict graph{");
                 out.flush();
-        
+
                 Set setE = EG.entrySet();
                 Iterator it = setE.iterator();
                 while(it.hasNext()) {
@@ -414,8 +415,10 @@ public class Graph {
         }
         return 1;
     }
-    
-    public Graph readGraph(Graph grafo) {
+
+    public int readGraph(Graph grafo) {
+        grafo.Nodes.clear();
+        grafo.Edges.clear();
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new File(System.getProperty("user.home")));
         JFrame f = new JFrame("");
@@ -435,13 +438,12 @@ public class Graph {
             bar.setString("Loading. Please wait...");
             dialog.add(bar);
             dialog.pack();
-            
             worker = new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() {
                     int dir = 0;
                     int edges = 0;
-                    int nodes = 0;                
+                    int nodes = 0;
                     File selectedFile = fc.getSelectedFile();
                     Path path = Paths.get(selectedFile.getAbsolutePath());
                     //System.out.println("Selected file: " + path.toString());
@@ -453,10 +455,12 @@ public class Graph {
                                 String[] currentLine = {""};
                                 if (line.contains("--")) {
                                     dir = 0;
+                                    grafo.dirigido = 0;
                                     currentLine = line.replace("\"", "").trim().split("--");
                                 }
                                 if (line.contains("->")) {
                                     dir = 1;
+                                    grafo.dirigido = 1;
                                     currentLine = line.replace("\"", "").trim().split("->");
                                 }
                                 String[] nodeL = currentLine[0].split(",| ");
@@ -477,10 +481,12 @@ public class Graph {
                                 String[] currentLine = {""};
                                 if (line.contains("--")) {
                                     dir = 0;
+                                    grafo.dirigido = 0;
                                     currentLine = line.replace("\"", "").trim().split("--");
                                 }
                                 if (line.contains("->")) {
                                     dir = 1;
+                                    grafo.dirigido = 1;
                                     currentLine = line.replace("\"", "").trim().split("->");
                                 }
                                 String[] nodeL = currentLine[0].split(",| ");
@@ -489,6 +495,35 @@ public class Graph {
                                 int der = Integer.parseInt(nodeR[0]);
                                 createEdge(edges, grafo.Nodes.get(izq), grafo.Nodes.get(der), "Connects node " + izq + " and node " + der, dir);
                                 edges++;
+                            }
+                        }
+                        for(String line : lines) {
+                            if(line.contains("label")) {
+                                String[] currentLine = {""};
+                                if(line.contains("--")) {
+                                    dir = 0;
+                                    currentLine = line.replace("\"", "").trim().split("--|=");
+                                }
+                                if(line.contains("->")) {
+                                    dir = 1;
+                                    currentLine = line.replace("\"", "").trim().split("->|=");
+                                }
+                                String[] nodeL = currentLine[0].split(",| ");
+                                int izq = Integer.parseInt(nodeL[0]);
+                                String[] nodeR = currentLine[1].split(",| ");
+                                int der = Integer.parseInt(nodeR[0]);
+                                String[] weight = currentLine[2].trim().split(",| |\\[|\\]");
+                                double weigh = Double.parseDouble(weight[0]);
+                                Edge edge = new Edge(grafo.Nodes.get(izq), grafo.Nodes.get(der), "Connects node " + izq + " and node " + der, dir);
+                                Set set = grafo.Edges.entrySet();
+                                Iterator it = set.iterator();
+                                while(it.hasNext()) {
+                                    Map.Entry mentry = (Map.Entry)it.next();
+                                    Edge edgeCompara = (Edge)mentry.getValue();
+                                    if(edge.equals(edgeCompara)) {
+                                        edgeCompara.setWeight(weigh);
+                                    }
+                                }
                             }
                         }
                         //System.out.println(Edges.size() +":" + Nodes.size());
@@ -505,10 +540,11 @@ public class Graph {
             };
             worker.execute();
             dialog.setVisible(true);
-        }        
-        return this;
+            return 1;
+        }
+        return 0;
     }
-    
+
     public void resetNodes(Graph grafo) {
         Set set = grafo.getNodesGraph().entrySet();
         Iterator it = set.iterator();
@@ -518,11 +554,11 @@ public class Graph {
             node.visited = false;
         }
     }
-    
+
     public void resetTree(Graph grafo) {
         grafo.treeEdges.clear();
     }
-    
+
     public void BFS(Graph grafo, Node root) {
         Deque<Node> myQ = new LinkedList<>();
         myQ.add(root);
@@ -545,7 +581,7 @@ public class Graph {
             }
         }
     }
-    
+
     public int DFS_R(Graph grafo, Node root) {
         HashMap<Integer, Node> neighbors = root.getAdjacentNodes();
         root.visited = true;
@@ -565,10 +601,10 @@ public class Graph {
         }
         return root.getId();
     }
-    
+
     public void DFS_I(Graph grafo, Node root){
         Stack<Node> stack = new Stack<>();
-        Deque<Node> nodosIndex = new LinkedList<>(); 
+        Deque<Node> nodosIndex = new LinkedList<>();
         stack.add(root);
         root.visited = true;
         int adding = 0;
@@ -613,7 +649,7 @@ public class Graph {
             }
         }
     }
-    
+
     public void setEdgeWeights(double min, double max, boolean onlyInteger) {
         Set set = Edges.entrySet();
         Iterator it = set.iterator();
@@ -626,11 +662,59 @@ public class Graph {
                 edge.weight = min + (Math.random() * ((max - min) + 1));
             }
         }
+        graphWeightedGraph();
     }
-    
+
+    public int graphWeightedGraph() {
+        //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
+        JFileChooser fc = new JFileChooser();
+        if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            String name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
+            try (FileWriter fw = new FileWriter(name+".gv");
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw)) {
+                if (dirigido == 0) { // Not directed graph
+                    out.println("strict graph{");
+                    out.flush();
+                } else { // Directed graph
+                    out.println("strict digraph{");
+                    out.flush();
+                }
+
+            Set setE = Edges.entrySet();
+            Iterator it = setE.iterator();
+            while(it.hasNext()) {
+                Map.Entry mentry = (Map.Entry)it.next();
+                Edge edge = (Edge)mentry.getValue();
+                HashMap<Integer, Node> anode = edge.getNodes();
+                Node A = anode.get(1);
+                Node B = anode.get(2);
+                if (dirigido == 0) { // Not directed graph
+                    out.println("   \"" + A.getId() + "," + A.getGrad() + "\"--\"" + B.getId() + "," + B.getGrad() + "\" [label = \"" + edge.getWeight() + "\"]");
+                    out.flush();
+                } else { // Directed graph
+                    out.println("   \"" + A.getId() + "," + A.getGrad() + "\"->\"" + B.getId() + "," + B.getGrad() + "\" [label = \"" + edge.getWeight() + "\"]");
+                    out.flush();
+                }
+            }
+            out.println("}");
+            out.close();
+            JOptionPane.showMessageDialog(null, "The graph will be saved in: " + name + ".gv", "Graph Created", JOptionPane.INFORMATION_MESSAGE);
+            return 1;
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "The graph couldn't be saved in: " + name + ".gv", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+                return 0;
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "The graph was not saved.", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return 1;
+    }
+
     public void Dijkstra(Graph grafo, Node s) {
         int key = -1;
         Edge edge = new Edge();
+        Edge edgeO = new Edge();
         Set<Integer> settled = new HashSet<>();
         PriorityQueue<Node> pq = new PriorityQueue<>();
         // Set source node dist as 0
@@ -651,34 +735,35 @@ public class Graph {
             }
         }
         pq.add(s);
-        System.out.println(pq.size());
-        while(!pq.isEmpty()) {            
-
+        while(!pq.isEmpty()) {
             Node u = pq.remove();
             settled.add(u.getId());
             double edgeDistance = -1.0;
             double newDistance = -1.0;
             Set set1 = u.adjacentNodes.entrySet();
+            //set1.removeAll(pq);
             Iterator ite = set1.iterator();
             while(ite.hasNext()) {
                 Map.Entry mentry = (Map.Entry)ite.next();
                 Node v = (Node)mentry.getValue();
+                //System.out.println(prev.containsKey(v.getId()));
                 //System.out.print(v.getId());
                 if(!settled.contains(v.getId())) {
                     edge = new Edge(u, v, "Connects node " + u.getId() + " and node " + v.getId());
-                    //Edges.containsValue(edge);
-                    //edgeDistance = grafo.Edges.get(0).getWeight();
+                    edgeO = new Edge(v, u, "Connects node " + v.getId() + " and node " + u.getId());
                     Set setedge = Edges.entrySet();
                     Iterator iteratorEdge = setedge.iterator();
                     while(iteratorEdge.hasNext()) {
                         Map.Entry mentryEdge = (Map.Entry)iteratorEdge.next();
                         Edge edgeCompara = (Edge)mentryEdge.getValue();
-                        //System.out.println(edgeCompara.a.getId() + ":" + edgeCompara.getNodes().get(2).getId());
                         if (edge.equals(edgeCompara)) {
-                        //if ((u.getId() == edgeCompara.getNodes().get(0).getId()) && (v.getId() == edgeCompara.getNodes().get(0).getId())) {
                             key = (int)mentryEdge.getKey();
                             edgeDistance = edgeCompara.getWeight();
-                            //System.out.println("Aquí sí entro. La llave es :" + key + "y el peso es: " + edgeCompara.getWeight());
+                            break;
+                        }
+                        if (edgeO.equals(edgeCompara)) {
+                            key = (int)mentryEdge.getKey();
+                            edgeDistance = edgeCompara.getWeight();
                             break;
                         }
                     }
@@ -686,24 +771,26 @@ public class Graph {
                     newDistance = dist.get(u.getId()) + edgeDistance;
                     if(newDistance < dist.get(v.getId())) {
                         dist.put(v.getId(), newDistance);
+                        v.setCost(newDistance);
                         prev.put(v.getId(), u.getId());
                     }
                     pq.add(v);
                 }
             }
         }
+        graphDijkstra(grafo, "Dijkstra", prev, dist);
         Set se = Edges.entrySet();
         Iterator i = se.iterator();
         while(i.hasNext()) {
             Map.Entry mentr = (Map.Entry)i.next();
             Edge e = (Edge)mentr.getValue();
-            System.out.println("Edge: "+e.a.getId()+" -> "+e.b.getId() + "eith weight: "+e.getWeight());
+            //System.out.println("Edge: "+e.a.getId()+" -> "+e.b.getId() + "eith weight: "+e.getWeight());
         }
         Set sett = dist.entrySet();
         Iterator itt = sett.iterator();
         while(itt.hasNext()) {
             Map.Entry mentry = (Map.Entry)itt.next();
-            System.out.println("Nodo: " + mentry.getKey() + " Distance: " + mentry.getValue());
+            //System.out.println("Nodo: " + mentry.getKey() + " Distance: " + mentry.getValue());
         }
         Set zet = prev.entrySet();
         Iterator j = zet.iterator();
@@ -711,7 +798,72 @@ public class Graph {
             Map.Entry entry = (Map.Entry)j.next();
             int a = (int)entry.getKey();
             int b = (int)entry.getValue();
-            System.out.println("Nodo: " + a +" -> "+b);
+            //System.out.println("Nodo: " + a +" -> "+b);
         }
+    }
+
+    public int graphDijkstra(Graph grafo, String name, HashMap<Integer, Integer> prev, HashMap<Integer, Double> dist) {
+        //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
+        JFileChooser fc = new JFileChooser();
+        if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
+            HashMap<Integer, Edge> EG = grafo.getEdgesGraph();
+            try (FileWriter fw = new FileWriter(name+".gv");
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw)) {
+                if (dirigido == 0) { // Not directed graph
+                    out.println("strict graph{");
+                    out.flush();
+                } else { // Directed graph
+                    out.println("strict digraph{");
+                    out.flush();
+                }
+            Set setPrev = prev.entrySet();
+            Iterator itPrev = setPrev.iterator();
+            while(itPrev.hasNext()) {
+                Map.Entry mentry = (Map.Entry)itPrev.next();
+                int hijo = (int)mentry.getKey();
+                int padre = (int)mentry.getValue();
+                if (Integer.MIN_VALUE == padre) {
+                    continue;
+                }
+                Edge edge = new Edge(Nodes.get(padre), Nodes.get(hijo), "Connects node " + padre + " and node " + hijo);
+                Edge edgeO = new Edge(Nodes.get(hijo), Nodes.get(padre), "Connects node " + hijo + " and node " + padre);
+                //System.out.println(padre+":"+hijo);
+                double edgeWeight = 0.0;
+                Set setE = EG.entrySet();
+                Iterator it = setE.iterator();
+                while(it.hasNext()) {
+                    Map.Entry entryEdge = (Map.Entry)it.next();
+                    Edge enGrafo = (Edge)entryEdge.getValue();
+                    if(edge.equals(enGrafo)) {
+                        edgeWeight = enGrafo.getWeight();
+                        break;
+                    }
+                    if(edgeO.equals(enGrafo)) {
+                        edgeWeight = enGrafo.getWeight();
+                        break;
+                    }
+                }
+                if (dirigido == 0) { // Not directed graph
+                    out.println("   \"" + padre + "," + dist.get(padre) + "\"--\"" + hijo + "," + dist.get(hijo) + "\" [label = \"" + edgeWeight + "\"]");
+                    out.flush();
+                } else { // Directed graph
+                    out.println("   \"" + padre + "," + dist.get(padre) + "\"->\"" + hijo + "," + dist.get(hijo) + "\" [label = \"" + edgeWeight + "\"]");
+                    out.flush();
+                }
+            }
+            out.println("}");
+            out.close();
+            JOptionPane.showMessageDialog(null, "The calculated graph will be saved in: " + name + ".gv", "Graph Created", JOptionPane.INFORMATION_MESSAGE);
+            return 1;
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "The calculated graph couldn't be saved in: " + name + ".gv", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+                return 0;
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "The calculated graph was not saved.", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return 1;
     }
 }
