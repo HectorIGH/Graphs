@@ -253,7 +253,7 @@ public class Main{
                 int result = JOptionPane.showConfirmDialog(null, panel, "Choose method and set parameters",
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (result == JOptionPane.OK_OPTION) {
-                    System.out.println(comboGraph.getSelectedItem() + " " + comboDirig.getSelectedItem() + " " + comboConnect.getSelectedItem() + " " + JSnodos.getValue() + " " + JSedges.getValue() + " " + JSprobability.getValue() + " " + JSdistance.getValue() + " " + JSConNodes.getValue() + " " + JSexpectedNodes.getValue());
+                    //System.out.println(comboGraph.getSelectedItem() + " " + comboDirig.getSelectedItem() + " " + comboConnect.getSelectedItem() + " " + JSnodos.getValue() + " " + JSedges.getValue() + " " + JSprobability.getValue() + " " + JSdistance.getValue() + " " + JSConNodes.getValue() + " " + JSexpectedNodes.getValue());
                     // Dialog and worker to show a progress bar
                     SwingWorker<Void, Void> worker;
                     final JDialog dialog = new JDialog(f, true);
