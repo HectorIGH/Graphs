@@ -353,10 +353,12 @@ public class Graph {
                 Node B = anode.get(2);
                 //System.out.println("node " + A.getId() + " & node " + B.getId());
                 if (dir == 0) { // Not directed graph
-                    out.println("   \"" + A.getId() + "," + A.getGrad() + "\"--\"" + B.getId() + "," + B.getGrad() + "\"");
+                    //out.println("   \"" + A.getId() + "," + A.getGrad() + "\"--\"" + B.getId() + "," + B.getGrad() + "\"");
+                    out.println("   \"" + A.getId() + "\"--\"" + B.getId() + "\"");
                     out.flush();
                 } else { // Directed graph
-                    out.println("   \"" + A.getId() + "," + A.getGrad() + "\"->\"" + B.getId() + "," + B.getGrad() + "\"");
+                    //out.println("   \"" + A.getId() + "," + A.getGrad() + "\"->\"" + B.getId() + "," + B.getGrad() + "\"");
+                    out.println("   \"" + A.getId() + "\"->\"" + B.getId() + "\"");
                     out.flush();
                 }
             }
@@ -846,10 +848,10 @@ public class Graph {
                     }
                 }
                 if (dirigido == 0) { // Not directed graph
-                    out.println("   \"" + padre + "," + dist.get(padre) + "\"--\"" + hijo + "," + dist.get(hijo) + "\" [label = \"" + edgeWeight + "\"]");
+                    out.println("   \"" + padre + ",(" + dist.get(padre) + ")\"--\"" + hijo + ",(" + dist.get(hijo) + ")\" [label = \"" + edgeWeight + "\"]");
                     out.flush();
                 } else { // Directed graph
-                    out.println("   \"" + padre + "," + dist.get(padre) + "\"->\"" + hijo + "," + dist.get(hijo) + "\" [label = \"" + edgeWeight + "\"]");
+                    out.println("   \"" + padre + ",(" + dist.get(padre) + ")\"->\"" + hijo + ",(" + dist.get(hijo) + ")\" [label = \"" + edgeWeight + "\"]");
                     out.flush();
                 }
             }
