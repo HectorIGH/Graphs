@@ -207,9 +207,6 @@ public class Graph {
     }
 
     public Graph Geo(int n, double r, int dir, int cic) {
-        if (r > 1) {
-            return null;
-        }
         int i, j, NE = 0, create = 1;
         createNodesXY(n);
 
@@ -692,10 +689,10 @@ public class Graph {
                 Node A = anode.get(1);
                 Node B = anode.get(2);
                 if (dirigido == 0) { // Not directed graph
-                    out.println("   \"" + A.getId() + "," + A.getGrad() + "\"--\"" + B.getId() + "," + B.getGrad() + "\" [label = \"" + edge.getWeight() + "\"]");
+                    out.println("   \"" + A.getId() + "\"--\"" + B.getId() + "\" [label = \"" + edge.getWeight() + "\"]");
                     out.flush();
                 } else { // Directed graph
-                    out.println("   \"" + A.getId() + "," + A.getGrad() + "\"->\"" + B.getId() + "," + B.getGrad() + "\" [label = \"" + edge.getWeight() + "\"]");
+                    out.println("   \"" + A.getId() + "\"->\"" + B.getId() + "\" [label = \"" + edge.getWeight() + "\"]");
                     out.flush();
                 }
             }
@@ -737,7 +734,7 @@ public class Graph {
             }
         }
         pq.add(s);
-        while(!pq.isEmpty()) {
+        while(settled.size() != Nodes.size()) {
             Node u = pq.remove();
             settled.add(u.getId());
             double edgeDistance = -1.0;
