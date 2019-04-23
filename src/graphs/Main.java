@@ -58,6 +58,10 @@ public class Main{
         JButton jbDijksAlg = new JButton("Dijkstra's algorithm");
         jbDijksAlg.setActionCommand("dijkstrasalgorithm");
         jbDijksAlg.setEnabled(false);
+        
+        JButton jbMST = new JButton("Minimum Spanning Tree algorithms");
+        jbMST.setActionCommand("MSTalgorithms");
+        jbMST.setEnabled(false);
 
         JMenu jmHelp = new JMenu("Help");
         JMenuItem jmiAbout = new JMenuItem("About");
@@ -344,6 +348,7 @@ public class Main{
                     jbSearchAlg.setEnabled(true);
                     jbAddWeights.setEnabled(true);
                     jbDijksAlg.setEnabled(true);
+                    jbMST.setEnabled(true);
                 } else {
                     //System.out.println("Cancelled");
                 }
@@ -361,6 +366,7 @@ public class Main{
                     jbSearchAlg.setEnabled(true);
                     jbAddWeights.setEnabled(true);
                     jbDijksAlg.setEnabled(true);
+                    jbMST.setEnabled(true);
                 }
             }
         });
@@ -565,11 +571,100 @@ public class Main{
             }
         });
         
+        jbMST.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame f = new JFrame("");
+                JPanel panel = new JPanel(new GridLayout(0, 1));
+                f.setLocationRelativeTo(null);
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                String[] algos = {"Kruskal", "Reverse Delete Algorithm (Inverse Kruskal)", "Prim"};
+                JComboBox<String> comboAlgo = new JComboBox<>(algos);
+                JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
+                JButton JBalgo = new JButton("Run the algorithm.");
+                panel.add(new JLabel("Select the model to be used."));
+                panel.add(comboAlgo);
+                panel.add(new JLabel("Select the root node"));
+                panel.add(JSnodo);
+                panel.add(JBalgo);
+                JBalgo.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        int alg = comboAlgo.getSelectedIndex();
+                        int node = (int)JSnodo.getValue();
+                        SwingWorker<Void, Void> worker;
+                        final JDialog dialog = new JDialog(f, true);
+                        dialog.setUndecorated(true);
+                        dialog.setLocationRelativeTo(null);
+                        dialog.setLocation(f.getLocation().x + f.getSize().width / 4, f.getLocation().y + f.getSize().height / 4);
+                        JProgressBar bar = new JProgressBar();
+                        bar.setIndeterminate(true);
+                        bar.setStringPainted(true);
+                        bar.setBackground(Color.green);
+                        bar.setString("Calculating. Please wait...");
+                        dialog.add(bar);
+                        dialog.pack();
+                        switch (alg) {
+                            case 0:
+                                worker = new SwingWorker<Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground() {
+                                        grafo.kruskal(grafo, grafo.Nodes.get(node));
+                                        return null;
+                                    }
+                                    @Override
+                                    protected void done() {
+                                        dialog.dispose();
+                                    }
+                                };
+                                worker.execute();
+                                dialog.setVisible(true);
+                                break;
+                            case 1:
+                                worker = new SwingWorker<Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground() {
+                                        grafo.inverseKruskal(grafo, grafo.Nodes.get(node));
+                                        return null;
+                                    }
+                                    @Override
+                                    protected void done() {
+                                        dialog.dispose();
+                                    }
+                                };
+                                worker.execute();
+                                dialog.setVisible(true);
+                                break;
+                            case 2:
+                                worker = new SwingWorker<Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground() {
+                                        grafo.prim(grafo, grafo.Nodes.get(node));
+                                        return null;
+                                    }
+                                    @Override
+                                    protected void done() {
+                                        dialog.dispose();
+                                    }
+                                };
+                                worker.execute();
+                                dialog.setVisible(true);
+                                break;
+                        }
+                    }
+                });
+                //int result = JOptionPane.showConfirmDialog(null, panel, "Choose algorithm and set root node",JOptionPane.YES_OPTION, JOptionPane.PLAIN_MESSAGE);
+                String[] options = {"OK"};
+                JOptionPane.showOptionDialog(null, panel, "Search algorithms", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+            }
+        });
+        
         p.add(jbGrafos);
         p.add(jbLoadGraph);
         p.add(jbSearchAlg);
         p.add(jbAddWeights);
         p.add(jbDijksAlg);
+        p.add(jbMST);
         f.setSize(300, 100 * p.getComponentCount());
         f.add(p);
 

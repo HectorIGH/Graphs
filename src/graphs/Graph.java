@@ -865,4 +865,16 @@ public class Graph {
         }
         return 1;
     }
+    
+    public void kruskal(Graph grafo, Node s) {
+        JOptionPane.showMessageDialog(null, "Warning.", "Under development.", JOptionPane.WARNING_MESSAGE);
+    }
+    
+    public void inverseKruskal(Graph grafo, Node s) {
+        JOptionPane.showMessageDialog(null, "Warning.", "Under development.", JOptionPane.WARNING_MESSAGE);
+    }
+    
+    public void prim(Graph grafo, Node s) {
+        JOptionPane.showMessageDialog(null, "Warning.", "Under development.", JOptionPane.WARNING_MESSAGE);
+    }
 }
