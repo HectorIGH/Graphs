@@ -34,6 +34,7 @@ public class Graph {
     HashMap<Integer, Edge> treeEdges = new HashMap<>();
     int loadedGraphDirected = 0;
     int dirigido = 0;
+    int reachableNodes = 0;
 
     public Graph() {
         //Constructor with no parameters
@@ -81,6 +82,26 @@ public class Graph {
             createNode(i, "Node " + i, "No data");
         }
     }
+    
+    public void sieveNodes() {
+        Set<Integer> reachable = new HashSet<>();
+        Set set = Edges.entrySet();
+        Iterator i = set.iterator();
+        while(i.hasNext()) {
+            Map.Entry mentry = (Map.Entry)i.next();
+            Edge edge = (Edge)mentry.getValue();
+            reachable.add(edge.getNodes().get(1).getId());
+            reachable.add(edge.getNodes().get(2).getId());
+        }
+        this.reachableNodes = reachable.size();
+    }
+    
+    public void createNodesFromFile(Set<Integer> nodesFromFile) {
+        for (int index : nodesFromFile) {
+            createNode(index, "Node " + index, "No data");
+            //System.out.println(index);
+        }
+    }
 
     public void createNodesXY(int n) {
         int i;
@@ -94,9 +115,8 @@ public class Graph {
     }
 
     public Graph Erdos(int n, int m, int dir, int cic) {
-        if (m > n*(n+1)/2) {
-            return null;
-        }
+        this.Nodes.clear();
+        this.Edges.clear();
         Random rand = new Random();
         int j = 0, indexA, indexB, create = 1;
         createNodes(n);
@@ -134,13 +154,13 @@ public class Graph {
             }
             j++;
         }
+        this.sieveNodes();
         return this;
     }
 
     public Graph Gilbert(int n, double p, int dir, int cic) {
-        if (p > 1) {
-            return null;
-        }
+        this.Nodes.clear();
+        this.Edges.clear();
         Random rand = new Random();
         int i, j, NE = 0, create = 1;
         double probability;
@@ -203,10 +223,13 @@ public class Graph {
             }
         }
         //System.out.println(Edges.size());
+        this.sieveNodes();
         return this;
     }
 
     public Graph Geo(int n, double r, int dir, int cic) {
+        this.Nodes.clear();
+        this.Edges.clear();
         int i, j, NE = 0, create = 1;
         createNodesXY(n);
 
@@ -287,10 +310,13 @@ public class Graph {
             }
         }
         //System.out.println(Edges.size());
+        this.sieveNodes();
         return this;
     }
 
     public Graph Barabasi(int n, int d, double g, int dir, int cic) {
+        this.Nodes.clear();
+        this.Edges.clear();
         int Ne = 0;
         double p = 0, pr;
         Random rand = new Random();
@@ -311,6 +337,7 @@ public class Graph {
                 }
             }
         }
+        this.sieveNodes();
         return this;
     }
 
@@ -325,6 +352,7 @@ public class Graph {
     public int graphGraph(Graph grapho, int dir, String name) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
+        fc.setSelectedFile(new File(name));
         if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
             HashMap<Integer, Edge> EG = grapho.getEdgesGraph();
@@ -380,6 +408,7 @@ public class Graph {
     public int graphTree(Graph grafo, String name) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
+        fc.setSelectedFile(new File(name));
         if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
             HashMap<Integer, Edge> EG = grafo.getEdgesTree();
@@ -416,6 +445,7 @@ public class Graph {
     }
 
     public int readGraph(Graph grafo) {
+        Set<Integer> nodesFromFile = new HashSet<>();
         grafo.Nodes.clear();
         grafo.Edges.clear();
         JFileChooser fc = new JFileChooser();
@@ -465,16 +495,20 @@ public class Graph {
                                 String[] nodeL = currentLine[0].split(",| ");
                                 String[] nodeR = currentLine[1].split(",| ");
                                 int izq = Integer.parseInt(nodeL[0]);
-                                if (nodes < izq) {
-                                    nodes = izq;
-                                }
+                                //if (nodes < izq) {
+                                //    nodes = izq;
+                                //}
                                 int der = Integer.parseInt(nodeR[0]);
-                                if (nodes < der) {
-                                    nodes = der;
-                                }
+                                //if (nodes < der) {
+                                //    nodes = der;
+                                //}
+                                nodesFromFile.add(izq);
+                                nodesFromFile.add(der);
                             }
                         }
-                        createNodes(nodes + 1);
+                        //createNodes(nodes + 1);
+                        createNodesFromFile(nodesFromFile);
+                        grafo.reachableNodes = nodesFromFile.size();
                         for (String line : lines) {
                             if(line.contains("--") || line.contains("->")) {
                                 String[] currentLine = {""};
@@ -734,7 +768,8 @@ public class Graph {
             }
         }
         pq.add(s);
-        while(settled.size() != Nodes.size()) {
+        //while(settled.size() != Nodes.size()) { //No jala esta condición (???)
+        while(!pq.isEmpty()) {
             Node u = pq.remove();
             settled.add(u.getId());
             double edgeDistance = -1.0;
@@ -778,18 +813,18 @@ public class Graph {
             }
         }
         graphDijkstra(grafo, "Dijkstra", prev, dist);
-        Set se = Edges.entrySet();
+        /*Set se = Edges.entrySet();
         Iterator i = se.iterator();
         while(i.hasNext()) {
             Map.Entry mentr = (Map.Entry)i.next();
             Edge e = (Edge)mentr.getValue();
-            //System.out.println("Edge: "+e.a.getId()+" -> "+e.b.getId() + "eith weight: "+e.getWeight());
+            System.out.println("Edge: "+e.a.getId()+" -> "+e.b.getId() + "eith weight: "+e.getWeight());
         }
         Set sett = dist.entrySet();
         Iterator itt = sett.iterator();
         while(itt.hasNext()) {
             Map.Entry mentry = (Map.Entry)itt.next();
-            //System.out.println("Nodo: " + mentry.getKey() + " Distance: " + mentry.getValue());
+            System.out.println("Nodo: " + mentry.getKey() + " Distance: " + mentry.getValue());
         }
         Set zet = prev.entrySet();
         Iterator j = zet.iterator();
@@ -797,13 +832,14 @@ public class Graph {
             Map.Entry entry = (Map.Entry)j.next();
             int a = (int)entry.getKey();
             int b = (int)entry.getValue();
-            //System.out.println("Nodo: " + a +" -> "+b);
-        }
+            System.out.println("Nodo: " + a +" -> "+b);
+        }*/
     }
 
     public int graphDijkstra(Graph grafo, String name, HashMap<Integer, Integer> prev, HashMap<Integer, Double> dist) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
+        fc.setSelectedFile(new File(name));
         if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
             HashMap<Integer, Edge> EG = grafo.getEdgesGraph();
@@ -866,8 +902,126 @@ public class Graph {
         return 1;
     }
     
-    public void kruskal(Graph grafo, Node s) {
-        JOptionPane.showMessageDialog(null, "Warning.", "Under development.", JOptionPane.WARNING_MESSAGE);
+    public int graphMST(Graph grafo, String name, HashMap<Integer, Edge> mst) {
+        //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
+        JFileChooser fc = new JFileChooser();
+        fc.setSelectedFile(new File(name));
+        if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
+            try (FileWriter fw = new FileWriter(name+".gv");
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw)) {
+                if (dirigido == 0) { // Not directed graph
+                    out.println("strict graph{");
+                    out.flush();
+                } else { // Directed graph
+                    out.println("strict digraph{");
+                    out.flush();
+                }
+            Set setPrev = mst.entrySet();
+            Iterator itPrev = setPrev.iterator();
+            double weight = 0.0;
+            while(itPrev.hasNext()) {
+                Map.Entry mentry = (Map.Entry)itPrev.next();
+                Edge edge = (Edge)mentry.getValue();
+                if (dirigido == 0) { // Not directed graph
+                    weight += edge.getWeight();
+                    out.println("   \"" + edge.a.getId() + "\"--\"" + edge.b.getId() + "\" [label = \"" + edge.getWeight() + "\"]");
+                    out.flush();
+                } else { // Directed graph
+                    weight += edge.getWeight();
+                    out.println("   \"" + edge.a.getId() + "\"->\"" + edge.b.getId() + "\" [label = \"" + edge.getWeight() + "\"]");
+                    out.flush();
+                }
+            }
+            out.println("labelloc=\"t\"\nlabel=\"MST's weight="+weight+"\"");
+            out.println("}");
+            out.close();
+            JOptionPane.showMessageDialog(null, "The calculated graph will be saved in: " + name + ".gv", "Graph Created", JOptionPane.INFORMATION_MESSAGE);
+            return 1;
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "The calculated graph couldn't be saved in: " + name + ".gv", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+                return 0;
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "The calculated graph was not saved.", "Graph Not Created", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return 1;
+    }
+    
+    public void kruskal(Graph grafo) {
+        PriorityQueue<Edge> pq = new PriorityQueue<>();
+        HashMap<Integer, Integer> prev = new HashMap<>();
+        HashMap<Integer, Edge> mst = new HashMap<>();
+        Set set = Edges.entrySet();
+        Iterator it = set.iterator();
+        // Add all edges to priority queue
+        while (it.hasNext()) {
+            Map.Entry mentry = (Map.Entry)it.next();
+            Edge edge = (Edge)mentry.getValue();
+            pq.add(edge);
+        }
+        // Create list of parents for each node. Initially each nodes is its parent
+        Set nodeSet = Nodes.entrySet();
+        Iterator nodesIterator = nodeSet.iterator();
+        while(nodesIterator.hasNext()) {
+            Map.Entry mentry = (Map.Entry)nodesIterator.next();
+            Node node = (Node)mentry.getValue();
+            prev.put(node.getId(), node.getId());
+        }
+        // Process nodes-1 edges
+        int index = 0;
+        //while(index < grafo.reachableNodes - 1) {
+        while(!pq.isEmpty()) {
+            Edge edge = pq.poll();
+            // Check if adding this edge creates a cycle
+            int first = find(prev, edge.a.getId());
+            int second = find(prev, edge.b.getId());
+            if (first == second) {
+                // We ignore since it would create a cycle
+                System.out.println("No avanzo weeee" + grafo.reachableNodes+" : "+mst.size());
+                Set zet = mst.entrySet();
+                Iterator ite = zet.iterator();
+                while(ite.hasNext()) {
+                    Map.Entry menty = (Map.Entry)ite.next();
+                    Edge edje = (Edge)menty.getValue();
+                    System.out.println(edje.toString());
+                }
+            } else {
+                // Add it to our final result
+                mst.put(index, edge);
+                index++;
+                union(prev, first, second);
+            }
+        }
+        // Print MST
+        this.graphMST(grafo, "MST using Kruskal", mst);
+        System.out.println("Minimum Spanning Tree: "+mst.size());
+        Set zet = mst.entrySet();
+        Iterator ite = zet.iterator();
+        while(ite.hasNext()) {
+            Map.Entry menty = (Map.Entry)ite.next();
+            Edge edje = (Edge)menty.getValue();
+            System.out.println(edje.toString());
+        }
+    }
+    
+    public int find(HashMap<Integer, Integer> prev, int idNode) {
+        // Chain of parent pointers from x upwards through the tree
+        // until an element is reached whose parent is itself
+        if(prev.get(idNode) != idNode) {
+            System.out.println("Stuck_find");
+            return find(prev, prev.get(idNode));
+        }
+        return idNode;
+    }
+    
+    public void union(HashMap<Integer, Integer> prev, int x, int y) {
+        int x_parent = find(prev, x);
+        int y_parent = find(prev, y);
+        // Make x as parent of y
+        System.out.println("Stuck_Union");
+        prev.put(y_parent, x_parent);
     }
     
     public void inverseKruskal(Graph grafo, Node s) {

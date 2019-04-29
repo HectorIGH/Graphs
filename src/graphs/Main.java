@@ -609,7 +609,7 @@ public class Main{
                                 worker = new SwingWorker<Void, Void>() {
                                     @Override
                                     protected Void doInBackground() {
-                                        grafo.kruskal(grafo, grafo.Nodes.get(node));
+                                        grafo.kruskal(grafo);
                                         return null;
                                     }
                                     @Override

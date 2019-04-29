@@ -11,7 +11,7 @@ import java.util.*;
  *
  * @author Hector Ivan Garcia-Hernandez
  */
-public class Edge {
+public class Edge implements Comparable<Edge> {
     
     Node a;
     Node b;
@@ -79,9 +79,22 @@ public class Edge {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 97 * hash + Objects.hashCode(this.a);
-        hash = 97 * hash + Objects.hashCode(this.b);
-        return hash;
+        return (int)Double.hashCode(this.weight);
+    }
+
+    @Override
+    public int compareTo(Edge edge) {
+        if (this.getWeight() > edge.getWeight()) {
+            return 1;
+        } else if (this.getWeight() < edge.getWeight()) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return "Edge connects node " + this.a.getId() + " to node " + this.b.getId() + " and it has a weight of: " + this.getWeight() + "\n";
     }
 }
