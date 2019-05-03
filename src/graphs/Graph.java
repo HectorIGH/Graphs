@@ -1006,6 +1006,7 @@ public class Graph {
         }
     }
     
+    // Auxiliar functions for Kruskal
     public int find(HashMap<Integer, Integer> prev, int idNode) {
         // Chain of parent pointers from x upwards through the tree
         // until an element is reached whose parent is itself
@@ -1016,6 +1017,7 @@ public class Graph {
         return idNode;
     }
     
+    // Auxiliar function for Kruskal
     public void union(HashMap<Integer, Integer> prev, int x, int y) {
         int x_parent = find(prev, x);
         int y_parent = find(prev, y);
@@ -1026,6 +1028,61 @@ public class Graph {
     
     public void inverseKruskal(Graph grafo, Node s) {
         JOptionPane.showMessageDialog(null, "Warning.", "Under development.", JOptionPane.WARNING_MESSAGE);
+        PriorityQueue<Edge> pq = new PriorityQueue<>(Collections.reverseOrder());
+        HashMap<Integer, Edge> mst = new HashMap<>();
+        Set set = Edges.entrySet();
+        Iterator it = set.iterator();
+        // Add all edges to priority queue
+        while (it.hasNext()) {
+            Map.Entry mentry = (Map.Entry)it.next();
+            Edge edge = (Edge)mentry.getValue();
+            pq.add(edge);
+        }
+        int index = 0;
+        while(!pq.isEmpty()) {
+            grafo.resetNodes(grafo);
+            Edge edge = pq.poll();
+            Node a = edge.a;
+            Node b = edge.b;
+            b.adjacentNodes.remove(a.getId());
+            a.adjacentNodes.remove(b.getId());
+            // Check if removing the edge disconnects the graph
+            grafo.BFS(grafo, a);
+            boolean test = checkAllVisited();
+            if (test) {
+            } else {
+                // Add edge to our final result
+                mst.put(index, edge);
+                index++;
+                b.adjacentNodes.put(a.getId(), a);
+                a.adjacentNodes.put(b.getId(), b);
+            }
+        }
+        // Print MST
+        this.graphMST(grafo, "MST using Reverse Kruskal", mst);
+        System.out.println("Minimum Spanning Tree: "+mst.size());
+        Set zet = mst.entrySet();
+        Iterator ite = zet.iterator();
+        while(ite.hasNext()) {
+            Map.Entry menty = (Map.Entry)ite.next();
+            Edge edje = (Edge)menty.getValue();
+            System.out.println(edje.toString());
+        }
+    }
+    
+    public boolean checkAllVisited() {
+        Set set = Nodes.entrySet();
+        Iterator ite = set.iterator();
+        while(ite.hasNext()) {
+            Map.Entry mentry = (Map.Entry)ite.next();
+            Node node = (Node)mentry.getValue();
+            if(node.visited) {
+            } else {
+                return false;
+            }
+        }
+        this.resetNodes(this);
+        return true;
     }
     
     public void prim(Graph grafo, Node s) {
