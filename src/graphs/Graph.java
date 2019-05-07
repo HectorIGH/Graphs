@@ -996,14 +996,14 @@ public class Graph {
         }
         // Print MST
         this.graphMST(grafo, "MST using Kruskal", mst);
-        System.out.println("Minimum Spanning Tree: "+mst.size());
+        /*System.out.println("Minimum Spanning Tree: "+mst.size());
         Set zet = mst.entrySet();
         Iterator ite = zet.iterator();
         while(ite.hasNext()) {
             Map.Entry menty = (Map.Entry)ite.next();
             Edge edje = (Edge)menty.getValue();
             System.out.println(edje.toString());
-        }
+        }*/
     }
     
     // Auxiliar functions for Kruskal
@@ -1026,8 +1026,12 @@ public class Graph {
         prev.put(y_parent, x_parent);
     }
     
-    public void inverseKruskal(Graph grafo, Node s) {
-        JOptionPane.showMessageDialog(null, "Warning.", "Under development.", JOptionPane.WARNING_MESSAGE);
+    public boolean inverseKruskal(Graph grafo, Node s) {
+        grafo.DFS_R(grafo, s);
+        if(!grafo.checkAllVisited()){
+            JOptionPane.showMessageDialog(null, "This method does not support not connected graphs.", "Error.", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
         PriorityQueue<Edge> pq = new PriorityQueue<>(Collections.reverseOrder());
         HashMap<Integer, Edge> mst = new HashMap<>();
         Set set = Edges.entrySet();
@@ -1047,7 +1051,7 @@ public class Graph {
             b.adjacentNodes.remove(a.getId());
             a.adjacentNodes.remove(b.getId());
             // Check if removing the edge disconnects the graph
-            grafo.BFS(grafo, a);
+            grafo.DFS_R(grafo, a);
             boolean test = checkAllVisited();
             if (test) {
             } else {
@@ -1060,14 +1064,7 @@ public class Graph {
         }
         // Print MST
         this.graphMST(grafo, "MST using Reverse Kruskal", mst);
-        System.out.println("Minimum Spanning Tree: "+mst.size());
-        Set zet = mst.entrySet();
-        Iterator ite = zet.iterator();
-        while(ite.hasNext()) {
-            Map.Entry menty = (Map.Entry)ite.next();
-            Edge edje = (Edge)menty.getValue();
-            System.out.println(edje.toString());
-        }
+        return true;
     }
     
     public boolean checkAllVisited() {
@@ -1085,7 +1082,70 @@ public class Graph {
         return true;
     }
     
-    public void prim(Graph grafo, Node s) {
-        JOptionPane.showMessageDialog(null, "Warning.", "Under development.", JOptionPane.WARNING_MESSAGE);
+    public boolean prim(Graph grafo, Node s) {
+        grafo.DFS_R(grafo, s);
+        if(!grafo.checkAllVisited()){
+            JOptionPane.showMessageDialog(null, "This method does not support not connected graphs.", "Error.", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        HashMap<Integer, Edge> mst = new HashMap<>();
+        int index = 0;
+        Edge edge = new Edge();
+        Edge edgeO = new Edge();
+        Set<Integer> settled = new HashSet<>();
+        PriorityQueue<Node> pq = new PriorityQueue<>();
+        // Set source node dist as 0
+        // HashMap for keeping track of predecessors
+        HashMap<Integer, Integer> prev = new HashMap<>();
+        prev.put(s.getId(), Integer.MIN_VALUE);
+        // HashMap for keeping track of distances
+        HashMap<Integer, Double> dist = new HashMap<>();
+        dist.put(s.getId(), 0.0);
+        Set set = Nodes.entrySet();
+        Iterator it = set.iterator();
+        while(it.hasNext()) {
+            Map.Entry mentry = (Map.Entry)it.next();
+            Node nodo = (Node)mentry.getValue();
+            if (nodo.getId() != s.getId()) {
+                dist.put(nodo.getId(), Double.MAX_VALUE);
+            }
+        }
+        pq.add(s);
+        while(!pq.isEmpty()) {
+            Node u = pq.remove();
+            settled.add(u.getId());
+            double edgeDistance = -1.0;
+            Set set1 = u.adjacentNodes.entrySet();
+            Iterator ite = set1.iterator();
+            while(ite.hasNext()) {
+                Edge edgeCompara = new Edge();
+                Map.Entry mentry = (Map.Entry)ite.next();
+                Node v = (Node)mentry.getValue();
+                if(!settled.contains(v.getId())) {
+                    edge = new Edge(u, v, "Connects node " + u.getId() + " and node " + v.getId());
+                    edgeO = new Edge(v, u, "Connects node " + v.getId() + " and node " + u.getId());
+                    Set setedge = Edges.entrySet();
+                    Iterator iteratorEdge = setedge.iterator();
+                    while(iteratorEdge.hasNext()) {
+                        Map.Entry mentryEdge = (Map.Entry)iteratorEdge.next();
+                        edgeCompara = (Edge)mentryEdge.getValue();
+                        if (edge.equals(edgeCompara) || edgeO.equals(edgeCompara)) {
+                            edgeDistance = edgeCompara.getWeight();
+                            break;
+                        }
+                    }
+                    if(edgeDistance < dist.get(v.getId())) {
+                        dist.put(v.getId(), edgeDistance);
+                        v.setCost(edgeDistance);
+                        prev.put(v.getId(), u.getId());
+                        mst.put(index, edgeCompara);
+                        index++;
+                    }
+                    pq.add(v);
+                }
+            }
+        }
+        this.graphMST(grafo, "MST using Prim's Algorithm", mst);
+        return true;
     }
 }

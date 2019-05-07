@@ -129,6 +129,6 @@ public class Node implements Comparable<Node> {
     
     @Override
     public String toString() {
-        return "Node " + this.getId() + " it has a cost: " + this.getCost() + " an it is " + this.visited + "tha's been visited.\n";
+        return "Node " + this.getId() + " it has a cost: " + this.getCost() + " and it is " + this.visited + " that's been visited.\n";
     }
 }
