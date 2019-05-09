@@ -65,7 +65,7 @@ public class Main{
         
         JButton jbFFT = new JButton("Fast Fourier Transform");
         jbFFT.setActionCommand("FFT");
-        jbFFT.setEnabled(false);
+        jbFFT.setEnabled(true);
 
         JMenu jmHelp = new JMenu("Help");
         JMenuItem jmiAbout = new JMenuItem("About");
@@ -667,10 +667,10 @@ public class Main{
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame f = new JFrame("");
-                JPanel panel = new JPanel(new GridLayout(0, 1));
+                JPanel panel = new JPanel(new GridLayout(4, 2, 3, 3));
                 f.setLocationRelativeTo(null);
                 f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                String[] algos = {"Básico", "Mamalón", "Muy Mamalón"};
+                String[] algos = {"Basico", "Mamalon", "Muy Mamalon"};
                 JComboBox<String> comboAlgo = new JComboBox<>(algos);
                 JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
                 JButton JBalgo = new JButton("Run the algorithm.");
@@ -698,10 +698,12 @@ public class Main{
                         dialog.pack();
                         switch (alg) {
                             case 0:
+                                f.dispose();
                                 worker = new SwingWorker<Void, Void>() {
                                     @Override
                                     protected Void doInBackground() {
-                                        grafo.kruskal(grafo);
+                                        JOptionPane.getRootFrame().dispose();
+                                        grafo.FFT_1();
                                         return null;
                                     }
                                     @Override
@@ -710,13 +712,12 @@ public class Main{
                                     }
                                 };
                                 worker.execute();
-                                dialog.setVisible(true);
                                 break;
                             case 1:
                                 worker = new SwingWorker<Void, Void>() {
                                     @Override
                                     protected Void doInBackground() {
-                                        grafo.inverseKruskal(grafo, grafo.Nodes.get(node));
+                                        grafo.prim(grafo, grafo.Nodes.get(node));
                                         return null;
                                     }
                                     @Override
@@ -725,7 +726,6 @@ public class Main{
                                     }
                                 };
                                 worker.execute();
-                                dialog.setVisible(true);
                                 break;
                             case 2:
                                 worker = new SwingWorker<Void, Void>() {
@@ -740,7 +740,6 @@ public class Main{
                                     }
                                 };
                                 worker.execute();
-                                dialog.setVisible(true);
                                 break;
                         }
                     }

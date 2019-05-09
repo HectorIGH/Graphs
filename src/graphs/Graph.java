@@ -6,7 +6,11 @@
 package graphs;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -15,6 +19,10 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -22,6 +30,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
+import org.knowm.xchart.QuickChart;
+import org.knowm.xchart.XChartPanel;
+import org.knowm.xchart.XYChart;
+import java.io.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -803,7 +816,7 @@ public class Graph {
                     }
                     //edgeDistance = v.getCost();
                     newDistance = dist.get(u.getId()) + edgeDistance;
-                    if(newDistance < dist.get(v.getId())) {
+                    if(newDistance <= dist.get(v.getId())) {
                         dist.put(v.getId(), newDistance);
                         v.setCost(newDistance);
                         prev.put(v.getId(), u.getId());
@@ -1147,5 +1160,162 @@ public class Graph {
         }
         this.graphMST(grafo, "MST using Prim's Algorithm", mst);
         return true;
+    }
+    
+    String pat = "";
+    public void FFT_1() {
+        boolean running = false;
+        JFrame f = new JFrame("Fast Fourier Transform");
+        double phase = 0;
+        double[][] initdata = getSineData(phase);
+        double[][] initdata2 = getCosineData(phase + Math.PI);
+        double[][] initdata3 = getRandomData(phase);
+ 
+        // Create Chart
+        final XYChart chart = QuickChart.getChart("Simple XChart Real-time Demo", "Radians", "Sine", "sine", initdata[0], initdata[1]);
+        
+        final XYChart chart2 = QuickChart.getChart("Simple XChart Real-time Demo 2", "Radianes", "Cosine", "cosine", initdata2[0], initdata2[1]);
+        
+        XYChart chart3 = QuickChart.getChart("Simple XChart Real-time Demo 3", "RadianEs", "Random", "random", initdata3[0], initdata3[1]);
+        
+        JPanel panel = new XChartPanel<>(chart);
+        JPanel panel2 = new XChartPanel<>(chart2);
+        JPanel panel3 = new XChartPanel<>(chart3);
+        JPanel pB = new JPanel();
+        
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        
+        mainPanel.add(panel);
+        mainPanel.add(panel2);
+        mainPanel.add(panel3);
+        mainPanel.add(pB);
+        
+        f.setLocationRelativeTo(null);
+        f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        
+        JButton JBload = new JButton("Load a .wav file.");
+        pB.add(JBload);
+        JButton JBFFT = new JButton("Perform FFT.");
+        pB.add(JBFFT);
+        JButton JBSavePoints = new JButton("Save retrieved points.");
+        pB.add(JBSavePoints);
+        JButton JBSaveTransformed = new JButton("Save transformed points.");
+        pB.add(JBSaveTransformed);
+        JButton JBSaveInversePoints = new JButton("Save inverse - transformed points.");
+        pB.add(JBSaveInversePoints);
+        JButton JBSaveWAV = new JButton("Save generated .wav.");
+        pB.add(JBSaveWAV);
+        
+        
+        f.setSize(1000, 150 * mainPanel.getComponentCount());
+        f.add(mainPanel);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        f.setLocation((int)((screenSize.getWidth() - f.getWidth())/2), (int)((screenSize.getHeight() - f.getHeight())/2));
+        f.setVisible(true);
+
+        // Show it
+        //final SwingWrapper<XYChart> sw = new SwingWrapper<XYChart>(chart);
+        //sw.displayChart();
+        JBload.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("WAV FIles", "wav", "wav");
+                JFileChooser fc = new JFileChooser();
+                fc.setFileFilter(filter);
+                fc.setCurrentDirectory(new File(System.getProperty("user.home")));
+                int index = 0;
+                if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fc.getSelectedFile();
+                    Path path = Paths.get(selectedFile.getAbsolutePath());
+                    pat = path.toString();
+                    try {
+                        WavFile wavFile = WavFile.openWavFile(new File(path.toString()));
+                        wavFile.display();
+                        int numChannels = wavFile.getNumChannels();
+                        //double[] buffer = new double[100 * numChannels];
+                        double[] buffer = new double[(int)wavFile.getNumFrames()];
+                        int framesRead;
+                        double min = Double.MAX_VALUE;
+                        double max = Double.MIN_VALUE;
+                        do {
+                            framesRead = wavFile.readFrames(buffer, (int)wavFile.getNumFrames());
+                            for (int s = 0; s < framesRead * numChannels; s++) {
+                                if (buffer[s] > max) {
+                                    max = buffer[s];
+                                }
+                                if (buffer[s] < min) {
+                                    min = buffer[s];
+                                }
+                            }
+                        } while (framesRead != 0);
+                        wavFile.close();
+                        System.out.println("Min : " + min + ", Max: " + max + "\n");
+                        System.out.println(buffer.length);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (WavFileException ex) {
+                        Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+ 
+        while (true) {
+            phase += 2 * Math.PI * 2 / 20.0;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            final double[][] data = getSineData(phase);
+            final double[][] data2 = getCosineData(phase + Math.PI);
+            final double[][] data3 = getRandomData(phase + Math.PI);
+            
+            chart.updateXYSeries("sine", data[0], data[1], null);
+            chart2.updateXYSeries("cosine", data2[0], data2[1], null);
+            chart3.updateXYSeries("random", data3[0], data3[1], null);
+            
+            //sw.repaintChart();
+            mainPanel.repaint();
+            f.repaint();
+        }
+    }
+    
+    private static double[][] getSineData(double phase) {
+        double[] xData = new double[100];
+        double[] yData = new double[100];
+        for (int i = 0; i < xData.length; i++) {
+            double radians = phase + (2 * Math.PI / xData.length * i);
+            xData[i] = radians;
+            yData[i] = Math.sin(radians);
+        }
+        return new double[][] { xData, yData };
+    }
+    
+    private static double[][] getCosineData(double phase) {
+        double[] xData = new double[100];
+        double[] yData = new double[100];
+        for (int i = 0; i < xData.length; i++) {
+            double radians = phase + (2 * Math.PI / xData.length * i);
+            xData[i] = radians;
+            yData[i] = Math.cos(radians);
+        }
+        return new double[][] { xData, yData };
+    }
+    
+    private static double[][] getRandomData(double phase) {
+        double[] xData = new double[100];
+        double[] yData = new double[100];
+        for (int i = 0; i < xData.length; i++) {
+            double radians = phase + (2 * Math.PI / xData.length * i);
+            xData[i] = radians;
+            yData[i] = Math.random()*10;
+        }
+        return new double[][] { xData, yData };
+    }
+    
+    private static double[][] getWavData(WavFile wavFile) {
+        return null;
     }
 }
