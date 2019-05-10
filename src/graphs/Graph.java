@@ -11,6 +11,8 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -35,6 +37,7 @@ import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
 import java.io.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.knowm.xchart.SwingWrapper;
 
 /**
  *
@@ -48,6 +51,9 @@ public class Graph {
     int loadedGraphDirected = 0;
     int dirigido = 0;
     int reachableNodes = 0;
+    String WAVpath = "";
+    boolean loadWAV = false;
+    WavFile wavFile = null;
 
     public Graph() {
         //Constructor with no parameters
@@ -1162,40 +1168,59 @@ public class Graph {
         return true;
     }
     
-    String pat = "";
-    public void FFT_1() {
-        boolean running = false;
-        JFrame f = new JFrame("Fast Fourier Transform");
-        double phase = 0;
+    double[] buffer = null;
+    boolean running = true;
+    double phase = 0;
+    double frames = 0;
+    double rates = 0;
+    int index = 0;
+    public void FFT(Path path) throws IOException, WavFileException {
+        buffer = null;
+        running = true;
+        phase = 0;
+        /////////////////////// Loading WAV file ///////////////////////////
+        /////////////////////// First thing to do ///////////////////////////
+        try {
+            wavFile = WavFile.openWavFile(new File(path.toString()));
+            wavFile.display();
+            frames = wavFile.getNumFrames();
+            rates = wavFile.getSampleRate();
+            //wavFile.close();
+            //System.out.println("Min : " + min + ", Max: " + max + "\n");
+        } catch (IOException | WavFileException ex) {
+        }
+        //////////////////////////////////////////////////////
+        
+        
+        //double phase = 0;
         double[][] initdata = getSineData(phase);
         double[][] initdata2 = getCosineData(phase + Math.PI);
         double[][] initdata3 = getRandomData(phase);
+        getWavData(wavFile, frames);
+        double[][] initdata4 = getWavDataByChunks(100);
  
         // Create Chart
         final XYChart chart = QuickChart.getChart("Simple XChart Real-time Demo", "Radians", "Sine", "sine", initdata[0], initdata[1]);
         
         final XYChart chart2 = QuickChart.getChart("Simple XChart Real-time Demo 2", "Radianes", "Cosine", "cosine", initdata2[0], initdata2[1]);
         
-        XYChart chart3 = QuickChart.getChart("Simple XChart Real-time Demo 3", "RadianEs", "Random", "random", initdata3[0], initdata3[1]);
+        final XYChart chart3 = QuickChart.getChart("Simple XChart Real-time Demo 3", "RadianEs", "Random", "random", initdata3[0], initdata3[1]);
         
+        final XYChart chart4 = QuickChart.getChart("Simple XChart Real-time Demo 4", "Time", "Wav", "wav", initdata4[0], initdata4[1]);
+        //////////////////////////////// Constructing GUI ///////////////////////////
+        JFrame f = new JFrame("Fast Fourier Transform");
         JPanel panel = new XChartPanel<>(chart);
         JPanel panel2 = new XChartPanel<>(chart2);
         JPanel panel3 = new XChartPanel<>(chart3);
         JPanel pB = new JPanel();
-        
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        
         mainPanel.add(panel);
         mainPanel.add(panel2);
         mainPanel.add(panel3);
         mainPanel.add(pB);
-        
         f.setLocationRelativeTo(null);
         f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        
-        JButton JBload = new JButton("Load a .wav file.");
-        pB.add(JBload);
         JButton JBFFT = new JButton("Perform FFT.");
         pB.add(JBFFT);
         JButton JBSavePoints = new JButton("Save retrieved points.");
@@ -1206,62 +1231,24 @@ public class Graph {
         pB.add(JBSaveInversePoints);
         JButton JBSaveWAV = new JButton("Save generated .wav.");
         pB.add(JBSaveWAV);
-        
-        
         f.setSize(1000, 150 * mainPanel.getComponentCount());
         f.add(mainPanel);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         f.setLocation((int)((screenSize.getWidth() - f.getWidth())/2), (int)((screenSize.getHeight() - f.getHeight())/2));
-        f.setVisible(true);
-
-        // Show it
-        //final SwingWrapper<XYChart> sw = new SwingWrapper<XYChart>(chart);
-        //sw.displayChart();
-        JBload.addActionListener(new ActionListener() {
+        f.addWindowListener(new WindowAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("WAV FIles", "wav", "wav");
-                JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(filter);
-                fc.setCurrentDirectory(new File(System.getProperty("user.home")));
-                int index = 0;
-                if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                    File selectedFile = fc.getSelectedFile();
-                    Path path = Paths.get(selectedFile.getAbsolutePath());
-                    pat = path.toString();
-                    try {
-                        WavFile wavFile = WavFile.openWavFile(new File(path.toString()));
-                        wavFile.display();
-                        int numChannels = wavFile.getNumChannels();
-                        //double[] buffer = new double[100 * numChannels];
-                        double[] buffer = new double[(int)wavFile.getNumFrames()];
-                        int framesRead;
-                        double min = Double.MAX_VALUE;
-                        double max = Double.MIN_VALUE;
-                        do {
-                            framesRead = wavFile.readFrames(buffer, (int)wavFile.getNumFrames());
-                            for (int s = 0; s < framesRead * numChannels; s++) {
-                                if (buffer[s] > max) {
-                                    max = buffer[s];
-                                }
-                                if (buffer[s] < min) {
-                                    min = buffer[s];
-                                }
-                            }
-                        } while (framesRead != 0);
-                        wavFile.close();
-                        System.out.println("Min : " + min + ", Max: " + max + "\n");
-                        System.out.println(buffer.length);
-                    } catch (IOException ex) {
-                        Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (WavFileException ex) {
-                        Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+            public void windowClosing(WindowEvent we) {
+                running = false;
             }
         });
- 
-        while (true) {
+        f.setVisible(true);
+        /////////////////////////////////////////////////////////////////
+
+        // Show it
+        final SwingWrapper<XYChart> sw = new SwingWrapper<XYChart>(chart4);
+        sw.displayChart();
+
+        while (running) {
             phase += 2 * Math.PI * 2 / 20.0;
             try {
                 Thread.sleep(100);
@@ -1271,14 +1258,20 @@ public class Graph {
             final double[][] data = getSineData(phase);
             final double[][] data2 = getCosineData(phase + Math.PI);
             final double[][] data3 = getRandomData(phase + Math.PI);
+            final double[][] data4 = getWavDataByChunks(100);
+            //System.out.println(data4[1].length +":"+ rates+":"+frames);
             
             chart.updateXYSeries("sine", data[0], data[1], null);
             chart2.updateXYSeries("cosine", data2[0], data2[1], null);
             chart3.updateXYSeries("random", data3[0], data3[1], null);
+            chart4.updateXYSeries("wav", data3[0], data4[1], null);
             
-            //sw.repaintChart();
+            sw.repaintChart();
             mainPanel.repaint();
             f.repaint();
+            index += 100;
+            //frames -= data4[1].length;
+            //offset += data4[1].length;
         }
     }
     
@@ -1315,7 +1308,38 @@ public class Graph {
         return new double[][] { xData, yData };
     }
     
-    private static double[][] getWavData(WavFile wavFile) {
-        return null;
+    private double[][] getWavData(WavFile wavFile, double frames) throws IOException, WavFileException {
+        int numChannels = wavFile.getNumChannels();
+        buffer = new double[(int)frames * numChannels];
+        //buffer = new double[(int)wavFile.getNumFrames()];
+        int framesRead;
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
+        double[] xData = new double[(int)frames * numChannels];
+        do {
+            framesRead = wavFile.readFrames(buffer, (int)frames);
+            for (int s= 0; s < buffer.length; s++) {
+                xData[s] = s;
+            }
+            /*for (int s = 0; s < framesRead * numChannels; s++) {
+                if (buffer[s] > max) {
+                    max = buffer[s];
+                }
+                if (buffer[s] < min) {
+                    min = buffer[s];
+                }
+            }*/
+        } while (framesRead != 0);
+        return new double[][] { xData, buffer };
+    }
+    
+    private double[][] getWavDataByChunks(int sizeOfChunk) {
+        double[] xData = new double[sizeOfChunk];
+        double[] yData = new double[sizeOfChunk];
+        for (int i = 0; i < sizeOfChunk; i ++) {
+            xData[i] = i;
+            yData[i] = buffer[index + i];
+        }
+        return new double[][] { xData, yData };
     }
 }

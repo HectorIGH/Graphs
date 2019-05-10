@@ -7,9 +7,16 @@ package graphs;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -672,30 +679,16 @@ public class Main{
                 f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 String[] algos = {"Basico", "Mamalon", "Muy Mamalon"};
                 JComboBox<String> comboAlgo = new JComboBox<>(algos);
-                JSpinner JSnodo = new JSpinner(new SpinnerNumberModel(0, 0, grafo.Nodes.size(), 1));
                 JButton JBalgo = new JButton("Run the algorithm.");
                 panel.add(new JLabel("Select the model to be used."));
                 panel.add(comboAlgo);
-                panel.add(new JLabel("Select the root node"));
-                panel.add(JSnodo);
                 panel.add(JBalgo);
+                
                 JBalgo.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         int alg = comboAlgo.getSelectedIndex();
-                        int node = (int)JSnodo.getValue();
                         SwingWorker<Void, Void> worker;
-                        final JDialog dialog = new JDialog(f, true);
-                        dialog.setUndecorated(true);
-                        dialog.setLocationRelativeTo(null);
-                        dialog.setLocation(f.getLocation().x + f.getSize().width / 4, f.getLocation().y + f.getSize().height / 4);
-                        JProgressBar bar = new JProgressBar();
-                        bar.setIndeterminate(true);
-                        bar.setStringPainted(true);
-                        bar.setBackground(Color.green);
-                        bar.setString("Calculating. Please wait...");
-                        dialog.add(bar);
-                        dialog.pack();
                         switch (alg) {
                             case 0:
                                 f.dispose();
@@ -703,12 +696,24 @@ public class Main{
                                     @Override
                                     protected Void doInBackground() {
                                         JOptionPane.getRootFrame().dispose();
-                                        grafo.FFT_1();
+                                        FileNameExtensionFilter filter = new FileNameExtensionFilter("WAV FIles", "wav", "wav");
+                                        JFileChooser fc = new JFileChooser();
+                                        fc.setDialogTitle("Choose WAV File");
+                                        fc.setFileFilter(filter);
+                                        fc.setCurrentDirectory(new File(System.getProperty("user.home")));
+                                        if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                                            File selectedFile = fc.getSelectedFile();
+                                            Path path = Paths.get(selectedFile.getAbsolutePath());
+                                            try {
+                                                grafo.FFT(path);
+                                            } catch (IOException | WavFileException ex) {
+                                                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                                            }
+                                        }
                                         return null;
                                     }
                                     @Override
                                     protected void done() {
-                                        dialog.dispose();
                                     }
                                 };
                                 worker.execute();
@@ -717,12 +722,10 @@ public class Main{
                                 worker = new SwingWorker<Void, Void>() {
                                     @Override
                                     protected Void doInBackground() {
-                                        grafo.prim(grafo, grafo.Nodes.get(node));
                                         return null;
                                     }
                                     @Override
                                     protected void done() {
-                                        dialog.dispose();
                                     }
                                 };
                                 worker.execute();
@@ -731,12 +734,10 @@ public class Main{
                                 worker = new SwingWorker<Void, Void>() {
                                     @Override
                                     protected Void doInBackground() {
-                                        grafo.prim(grafo, grafo.Nodes.get(node));
                                         return null;
                                     }
                                     @Override
                                     protected void done() {
-                                        dialog.dispose();
                                     }
                                 };
                                 worker.execute();
