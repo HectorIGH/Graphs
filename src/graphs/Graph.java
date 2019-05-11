@@ -38,6 +38,7 @@ import org.knowm.xchart.XYChart;
 import java.io.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.knowm.xchart.SwingWrapper;
+import org.knowm.xchart.style.AxesChartStyler;
 
 /**
  *
@@ -1174,6 +1175,8 @@ public class Graph {
     double frames = 0;
     double rates = 0;
     int index = 0;
+    double minWAV = Double.MAX_VALUE;
+    double maxWAV = Double.MIN_VALUE;
     public void FFT(Path path) throws IOException, WavFileException {
         buffer = null;
         running = true;
@@ -1188,6 +1191,7 @@ public class Graph {
             //wavFile.close();
             //System.out.println("Min : " + min + ", Max: " + max + "\n");
         } catch (IOException | WavFileException ex) {
+            System.out.println(ex);
         }
         //////////////////////////////////////////////////////
         
@@ -1197,7 +1201,8 @@ public class Graph {
         double[][] initdata2 = getCosineData(phase + Math.PI);
         double[][] initdata3 = getRandomData(phase);
         getWavData(wavFile, frames);
-        double[][] initdata4 = getWavDataByChunks(100);
+        double[][] initdata4 = getWavDataByChunks(1000);
+        System.out.println(maxWAV+":"+minWAV);
  
         // Create Chart
         final XYChart chart = QuickChart.getChart("Simple XChart Real-time Demo", "Radians", "Sine", "sine", initdata[0], initdata[1]);
@@ -1207,6 +1212,9 @@ public class Graph {
         final XYChart chart3 = QuickChart.getChart("Simple XChart Real-time Demo 3", "RadianEs", "Random", "random", initdata3[0], initdata3[1]);
         
         final XYChart chart4 = QuickChart.getChart("Simple XChart Real-time Demo 4", "Time", "Wav", "wav", initdata4[0], initdata4[1]);
+        chart4.getStyler().setYAxisMax(maxWAV);
+        chart4.getStyler().setYAxisMin(minWAV);
+        
         //////////////////////////////// Constructing GUI ///////////////////////////
         JFrame f = new JFrame("Fast Fourier Transform");
         JPanel panel = new XChartPanel<>(chart);
@@ -1251,14 +1259,14 @@ public class Graph {
         while (running) {
             phase += 2 * Math.PI * 2 / 20.0;
             try {
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
             }
             final double[][] data = getSineData(phase);
             final double[][] data2 = getCosineData(phase + Math.PI);
             final double[][] data3 = getRandomData(phase + Math.PI);
-            final double[][] data4 = getWavDataByChunks(100);
+            final double[][] data4 = getWavDataByChunks(1000);
             //System.out.println(data4[1].length +":"+ rates+":"+frames);
             
             chart.updateXYSeries("sine", data[0], data[1], null);
@@ -1269,15 +1277,15 @@ public class Graph {
             sw.repaintChart();
             mainPanel.repaint();
             f.repaint();
-            index += 100;
+            index += 1000;
             //frames -= data4[1].length;
             //offset += data4[1].length;
         }
     }
     
     private static double[][] getSineData(double phase) {
-        double[] xData = new double[100];
-        double[] yData = new double[100];
+        double[] xData = new double[1000];
+        double[] yData = new double[1000];
         for (int i = 0; i < xData.length; i++) {
             double radians = phase + (2 * Math.PI / xData.length * i);
             xData[i] = radians;
@@ -1287,8 +1295,8 @@ public class Graph {
     }
     
     private static double[][] getCosineData(double phase) {
-        double[] xData = new double[100];
-        double[] yData = new double[100];
+        double[] xData = new double[1000];
+        double[] yData = new double[1000];
         for (int i = 0; i < xData.length; i++) {
             double radians = phase + (2 * Math.PI / xData.length * i);
             xData[i] = radians;
@@ -1298,8 +1306,8 @@ public class Graph {
     }
     
     private static double[][] getRandomData(double phase) {
-        double[] xData = new double[100];
-        double[] yData = new double[100];
+        double[] xData = new double[1000];
+        double[] yData = new double[1000];
         for (int i = 0; i < xData.length; i++) {
             double radians = phase + (2 * Math.PI / xData.length * i);
             xData[i] = radians;
@@ -1313,29 +1321,32 @@ public class Graph {
         buffer = new double[(int)frames * numChannels];
         //buffer = new double[(int)wavFile.getNumFrames()];
         int framesRead;
-        double min = Double.MAX_VALUE;
-        double max = Double.MIN_VALUE;
         double[] xData = new double[(int)frames * numChannels];
         do {
             framesRead = wavFile.readFrames(buffer, (int)frames);
             for (int s= 0; s < buffer.length; s++) {
                 xData[s] = s;
             }
-            /*for (int s = 0; s < framesRead * numChannels; s++) {
-                if (buffer[s] > max) {
-                    max = buffer[s];
+            for (int s = 0; s < framesRead * numChannels; s++) {
+                if (buffer[s] > maxWAV) {
+                    maxWAV = buffer[s];
                 }
-                if (buffer[s] < min) {
-                    min = buffer[s];
+                if (buffer[s] < minWAV) {
+                    minWAV = buffer[s];
                 }
-            }*/
+            }
         } while (framesRead != 0);
         return new double[][] { xData, buffer };
     }
     
     private double[][] getWavDataByChunks(int sizeOfChunk) {
+        if(buffer.length < index + sizeOfChunk) {
+            sizeOfChunk = buffer.length - index;
+        }
+        
         double[] xData = new double[sizeOfChunk];
         double[] yData = new double[sizeOfChunk];
+        
         for (int i = 0; i < sizeOfChunk; i ++) {
             xData[i] = i;
             yData[i] = buffer[index + i];
