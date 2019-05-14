@@ -1353,4 +1353,69 @@ public class Graph {
         }
         return new double[][] { xData, yData };
     }
+    
+    public Complex[] fft(Complex[] x) {
+        int n = x.length;
+        if (n == 1) {
+            return new Complex[] {x[0]};
+        }
+        
+        // Even terms
+        int len = (n % 2 != 0) ? (n + 1) / 2 : n / 2;
+        Complex[] even = new Complex[len];
+        for (int k = 0; k < len; k++) {
+            even[k] = x[2 * k];
+        }
+        System.out.println("EVEN:"+Arrays.toString(even));
+        Complex[] e = fft(even);
+        
+        // Odd terms
+        len = (n % 2 != 0) ? (n - 1) / 2 : n / 2;
+        Complex[] odd = new Complex[len];
+        for (int k = 0; k < len; k++) {
+            odd[k] = x[2 * k + 1];
+        }
+        System.out.println("ODD:"+Arrays.toString(odd));
+        Complex[] o = fft(odd);
+        
+        // Combine
+        System.out.println("Combine: "+n);
+        len = (n % 2 != 0) ? (n - 1) / 2 : n / 2;
+        Complex[] y = new Complex[n];
+        System.out.println(Arrays.toString(o)+":"+Arrays.toString(e));
+        for (int k = 0; k < n/2; k ++) {
+            double kth = -2 * k * Math.PI / n;
+            Complex wk = new Complex(Math.cos(kth), Math.sin(kth));
+            y[k] = e[k].plus(wk.times(o[k]));
+            y[k + n/2] = e[k].minus(wk.times(o[k]));
+        }
+        System.out.println(Arrays.toString(y));
+        
+        return y;
+    }
+    
+    public Complex[] ifft(Complex[] x) {
+        int n = x.length;
+        Complex[] y = new Complex[n];
+        
+        // Take conjugate
+        for (int i = 0; i < n; i++) {
+            y[i] = x[i].conjugate();
+        }
+        
+        // Compute forward FFT
+        y = fft(y);
+        
+        // Take conjugate again
+        for (int i = 0; i < n; i++) {
+            y[i] = y[i].conjugate();
+        }
+        
+        // Divide by n
+        
+        for (int i = 0; i < n; i++) {
+            y[i] = y[i].scale(1.0 / n);
+        }
+        return y;
+    }
 }

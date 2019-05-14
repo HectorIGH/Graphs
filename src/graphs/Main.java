@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -719,6 +720,19 @@ public class Main{
                                 worker.execute();
                                 break;
                             case 1:
+                                int n = (int)Math.pow(2, 3);
+                                Complex[] x = new Complex[n];
+                                        for (int i = 0; i < n; i++) {
+                                            x[i] = new Complex(i/1.0, 0.0);
+                                        }
+                                        System.out.println(Arrays.toString(x));
+                                        System.out.println("Directa:");
+                                        Complex[] y = grafo.fft(x);
+                                        System.out.println("Inversa:");
+                                        Complex[] z = grafo.ifft(y);
+                                        for (int i = 0; i < n; i++) {
+                                            System.out.println(x[i]+" : "+y[i]+" : "+z[i].abs());
+                                        }
                                 worker = new SwingWorker<Void, Void>() {
                                     @Override
                                     protected Void doInBackground() {
