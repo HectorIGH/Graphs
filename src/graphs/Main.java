@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -708,7 +709,7 @@ public class Main{
                                             try {
                                                 grafo.FFT(path);
                                             } catch (IOException | WavFileException ex) {
-                                                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                                                JOptionPane.showMessageDialog(null, "The file could not be opened.", "Not opened.", JOptionPane.ERROR_MESSAGE);
                                             }
                                         }
                                         return null;
@@ -720,19 +721,29 @@ public class Main{
                                 worker.execute();
                                 break;
                             case 1:
-                                int n = (int)Math.pow(2, 3);
+                                int n = (int)Math.pow(2, 3) + 2;
                                 Complex[] x = new Complex[n];
-                                        for (int i = 0; i < n; i++) {
-                                            x[i] = new Complex(i/1.0, 0.0);
-                                        }
-                                        System.out.println(Arrays.toString(x));
-                                        System.out.println("Directa:");
-                                        Complex[] y = grafo.fft(x);
-                                        System.out.println("Inversa:");
-                                        Complex[] z = grafo.ifft(y);
-                                        for (int i = 0; i < n; i++) {
-                                            System.out.println(x[i]+" : "+y[i]+" : "+z[i].abs());
-                                        }
+                                for (int i = 0; i < n; i++) {
+                                    x[i] = new Complex(i/1.0, 0.0);
+                                }
+                                double power = Math.log10(n) / Math.log10(2);
+                                if (power % 1 != 0) {
+                                    System.out.println("No power");
+                                    ArrayList<Complex> temporal = new ArrayList<>(Arrays.asList(x));
+                                    power = Math.ceil(power);
+                                    for (int i = n; i < Math.pow(2, power); i++) {
+                                        temporal.add(new Complex(0.0, 0.0));
+                                    }
+                                    x = temporal.toArray(x);
+                                }
+                                System.out.println(Arrays.toString(x));
+                                System.out.println("Directa:");
+                                Complex[] y = grafo.fft(x);
+                                System.out.println("Inversa:");
+                                Complex[] z = grafo.ifft(y);
+                                for (int i = 0; i < n; i++) {
+                                    System.out.println(x[i]+" : "+y[i]+" : "+z[i].abs());
+                                }
                                 worker = new SwingWorker<Void, Void>() {
                                     @Override
                                     protected Void doInBackground() {
