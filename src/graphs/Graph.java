@@ -5,13 +5,20 @@
  */
 package graphs;
 
+import static com.sun.javafx.scene.control.skin.ScrollBarSkin.DEFAULT_WIDTH;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
@@ -42,8 +49,14 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.knowm.xchart.SwingWrapper;
+import org.knowm.xchart.XYSeries;
+import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
 import org.knowm.xchart.style.AxesChartStyler;
 
 /**
@@ -1335,7 +1348,7 @@ public class Graph {
                 try {
                     wavFile.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
+                    //Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
@@ -1346,14 +1359,14 @@ public class Graph {
         //final SwingWrapper<XYChart> sw = new SwingWrapper<XYChart>(chart4);
         //sw.displayChart();
         
-            clip.start();
+        clip.start();
 
         while (index < frames) {
             phase += 2 * Math.PI * 2 / 20.0;
             try {
                 Thread.sleep(900);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
             }
             System.out.println("Refresco en index: "+index/(int)rate);
             final double[][] data = getWavDataByChunks((int)rate);
@@ -1505,5 +1518,158 @@ public class Graph {
             y[i] = y[i].scale(1.0 / n);
         }
         return y;
+    }
+    
+    double yMax = 100;
+    double yMin = -100;
+    double xMax = 100;
+    double xMin = -100;
+    ArrayList<Double> xData = new ArrayList<>();
+    ArrayList<Double> yData = new ArrayList<>();
+    public void SLS() {
+        double[] x = {0};
+        double[] y = {0};
+        xData.clear();
+        yData.clear();
+        final XYChart chart = QuickChart.getChart("SLS", "X", "Y", "SLS", x, y);
+        
+        chart.getStyler().setYAxisMax(yMax);
+        chart.getStyler().setYAxisMin(yMin);
+        chart.getStyler().setXAxisMax(xMax);
+        chart.getStyler().setXAxisMin(xMin);
+        chart.getStyler().setMarkerSize(20);
+        chart.getStyler().setChartBackgroundColor(Color.CYAN);
+        chart.getStyler().setToolTipsEnabled(true);
+        
+        //////////////////////////////// Constructing GUI ///////////////////////////
+        JFrame f = new JFrame("Segmented Least Square");
+        JPanel panel = new XChartPanel<>(chart);
+        JPanel pB = new JPanel();
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(panel);
+        mainPanel.add(pB);
+        f.setLocationRelativeTo(null);
+        f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        JButton jbClear = new JButton("Clear points.");
+        pB.add(jbClear);
+        JButton jbZin = new JButton("Zoom in.");
+        pB.add(jbZin);
+        JButton jbZout = new JButton("Zoom out.");
+        pB.add(jbZout);
+        JButton jbSLS = new JButton("SLS.");
+        pB.add(jbSLS);
+        pB.add(new JLabel("Zoom percentage:"));
+        JSpinner JSPercent = new JSpinner(new SpinnerNumberModel(0.1, 0.0, 1.0, 0.1));
+        Component spinnerEditor = JSPercent.getEditor();
+        JFormattedTextField jftf = ((JSpinner.DefaultEditor) spinnerEditor).getTextField();
+        jftf.setColumns(2);
+        pB.add(JSPercent);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        f.setSize((int)screenSize.getWidth() - 100, (int)screenSize.getHeight() - 100);
+        panel.setSize(new Dimension(f.getWidth(), f.getHeight() - jbZin.getHeight()));
+        f.add(mainPanel);
+        f.setLocation((int)((screenSize.getWidth() - f.getWidth())/2), (int)((screenSize.getHeight() - f.getHeight())/2));
+        f.setVisible(true);
+        
+        jbClear.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                xData.clear();
+                yData.clear();
+                chart.updateXYSeries("SLS", new double[] {0}, new double[] {0}, null);
+                panel.repaint();
+                f.repaint();
+            }
+        });
+        
+        jbZin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                double per = 1.0 - (double)JSPercent.getValue();
+                yMax = chart.getStyler().getYAxisMax() * per;
+                yMin = chart.getStyler().getYAxisMin() * per;
+                xMax = chart.getStyler().getXAxisMax() * per;
+                xMin = chart.getStyler().getXAxisMin() * per;
+                chart.getStyler().setYAxisMax(yMax);
+                chart.getStyler().setYAxisMin(yMin);
+                chart.getStyler().setXAxisMax(xMax);
+                chart.getStyler().setXAxisMin(xMin);
+                panel.repaint();
+            }
+        });
+        
+        jbZout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                double per = 1.0 + (double)JSPercent.getValue();
+                yMax = chart.getStyler().getYAxisMax() * per;
+                yMin = chart.getStyler().getYAxisMin() * per;
+                xMax = chart.getStyler().getXAxisMax() * per;
+                xMin = chart.getStyler().getXAxisMin() * per;
+                chart.getStyler().setYAxisMax(yMax);
+                chart.getStyler().setYAxisMin(yMin);
+                chart.getStyler().setXAxisMax(xMax);
+                chart.getStyler().setXAxisMin(xMin);
+                panel.repaint();
+            }
+        });
+        
+        panel.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                double xBorder = 16.0;
+                double yBorder = 8.0;
+                double yBorderD = 17.0;
+                double x = (e.getX() - chart.getWidth() / 2 + xBorder) / (panel.getHeight() / xMax);
+                double y =((chart.getHeight()/2) - yBorder - e.getY()) / ((panel.getHeight() - yBorder - yBorderD) / (panel.getHeight() / 2)) ;
+                xData.add(x);
+                yData.add(y);
+                chart.updateXYSeries("SLS", xData, yData, null);
+                f.repaint();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        });
+        
+        jbSLS.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                xData.clear();
+                yData.clear();
+                xData.add(1.0);
+                xData.add(1.0);
+                xData.add(2.0);
+                xData.add(3.0);
+                xData.add(5.0);
+                xData.add(8.0);
+                xData.add(13.0);
+                yData.add(1.0);
+                yData.add(1.0);
+                yData.add(2.0);
+                yData.add(3.0);
+                yData.add(5.0);
+                yData.add(8.0);
+                yData.add(13.0);
+                chart.updateXYSeries("SLS", xData, yData, null);
+                panel.repaint();
+                f.repaint();
+            }
+        });
     }
 }

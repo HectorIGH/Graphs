@@ -75,6 +75,10 @@ public class Main{
         JButton jbFFT = new JButton("Fast Fourier Transform");
         jbFFT.setActionCommand("FFT");
         jbFFT.setEnabled(true);
+        
+        JButton jbSLS = new JButton("Segmented Least Square");
+        jbSLS.setActionCommand("SLS");
+        jbSLS.setEnabled(true);
 
         JMenu jmHelp = new JMenu("Help");
         JMenuItem jmiAbout = new JMenuItem("About");
@@ -776,6 +780,13 @@ public class Main{
             }
         });
         
+        jbSLS.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                grafo.SLS();
+            }
+        });
+        
         p.add(jbGrafos);
         p.add(jbLoadGraph);
         p.add(jbSearchAlg);
@@ -783,6 +794,7 @@ public class Main{
         p.add(jbDijksAlg);
         p.add(jbMST);
         p.add(jbFFT);
+        p.add(jbSLS);
         f.setSize(300, 50 * p.getComponentCount());
         f.add(p);
 
