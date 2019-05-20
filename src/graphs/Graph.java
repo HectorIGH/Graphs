@@ -5,20 +5,15 @@
  */
 package graphs;
 
-import static com.sun.javafx.scene.control.skin.ScrollBarSkin.DEFAULT_WIDTH;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
@@ -29,8 +24,10 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import javafx.util.Pair;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -43,8 +40,6 @@ import javax.swing.SwingWorker;
 import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
-import java.io.*;
-import javafx.stage.FileChooser;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
@@ -53,11 +48,8 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import org.knowm.xchart.SwingWrapper;
+import javax.swing.SwingUtilities;
 import org.knowm.xchart.XYSeries;
-import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
-import org.knowm.xchart.style.AxesChartStyler;
 
 /**
  *
@@ -1526,12 +1518,23 @@ public class Graph {
     double xMin = -100;
     ArrayList<Double> xData = new ArrayList<>();
     ArrayList<Double> yData = new ArrayList<>();
+    HashMap<Double, Double> coXY = new HashMap<>();
     public void SLS() {
-        double[] x = {0};
-        double[] y = {0};
+        double[] x = {0, 1};
+        double[] y = {0, 1};
         xData.clear();
         yData.clear();
-        final XYChart chart = QuickChart.getChart("SLS", "X", "Y", "SLS", x, y);
+        final XYChart chart1 = QuickChart.getChart("SLS", "X", "Y", "SLS", x, y);
+        final XYChart chart = new XYChart(chart1.getWidth(), chart1.getHeight());
+        chart.setTitle("SLS");
+        chart.setXAxisTitle("X");
+        chart.setYAxisTitle("Y");
+        chart.addSeries("Data", x, y);
+        chart.addSeries("SLS", new double[] {0}, new double[] {0});
+
+        chart.getStyler().setMarkerSize(2);
+
+        chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Scatter);
         
         chart.getStyler().setYAxisMax(yMax);
         chart.getStyler().setYAxisMin(yMin);
@@ -1575,8 +1578,18 @@ public class Graph {
         jbClear.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                coXY.clear();
                 xData.clear();
                 yData.clear();
+                chart.removeSeries("Data");
+                chart.removeSeries("SLS");
+                chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Scatter);
+                chart.setTitle("SLS");
+                chart.setXAxisTitle("X");
+                chart.setYAxisTitle("Y");
+                chart.addSeries("Data", new double[] {0}, new double[] {0});
+                chart.addSeries("SLS", new double[] {0}, new double[] {0});
+                chart.updateXYSeries("Data", new double[] {0}, new double[] {0}, null);
                 chart.updateXYSeries("SLS", new double[] {0}, new double[] {0}, null);
                 panel.repaint();
                 f.repaint();
@@ -1587,10 +1600,10 @@ public class Graph {
             @Override
             public void actionPerformed(ActionEvent e) {
                 double per = 1.0 - (double)JSPercent.getValue();
-                yMax = chart.getStyler().getYAxisMax() * per;
-                yMin = chart.getStyler().getYAxisMin() * per;
-                xMax = chart.getStyler().getXAxisMax() * per;
-                xMin = chart.getStyler().getXAxisMin() * per;
+                yMax = Math.ceil(chart.getStyler().getYAxisMax() * per);
+                yMin = Math.ceil(chart.getStyler().getYAxisMin() * per);
+                xMax = Math.ceil(chart.getStyler().getXAxisMax() * per);
+                xMin = Math.ceil(chart.getStyler().getXAxisMin() * per);
                 chart.getStyler().setYAxisMax(yMax);
                 chart.getStyler().setYAxisMin(yMin);
                 chart.getStyler().setXAxisMax(xMax);
@@ -1603,10 +1616,10 @@ public class Graph {
             @Override
             public void actionPerformed(ActionEvent e) {
                 double per = 1.0 + (double)JSPercent.getValue();
-                yMax = chart.getStyler().getYAxisMax() * per;
-                yMin = chart.getStyler().getYAxisMin() * per;
-                xMax = chart.getStyler().getXAxisMax() * per;
-                xMin = chart.getStyler().getXAxisMin() * per;
+                yMax = Math.ceil(chart.getStyler().getYAxisMax() * per);
+                yMin = Math.ceil(chart.getStyler().getYAxisMin() * per);
+                xMax = Math.ceil(chart.getStyler().getXAxisMax() * per);
+                xMin = Math.ceil(chart.getStyler().getXAxisMin() * per);
                 chart.getStyler().setYAxisMax(yMax);
                 chart.getStyler().setYAxisMin(yMin);
                 chart.getStyler().setXAxisMax(xMax);
@@ -1624,10 +1637,22 @@ public class Graph {
                 double yBorderD = 17.0;
                 double x = (e.getX() - chart.getWidth() / 2 + xBorder) / (panel.getHeight() / xMax);
                 double y =((chart.getHeight()/2) - yBorder - e.getY()) / ((panel.getHeight() - yBorder - yBorderD) / (panel.getHeight() / 2)) ;
-                xData.add(x);
-                yData.add(y);
-                chart.updateXYSeries("SLS", xData, yData, null);
+                
+                coXY.put(x, y);
+                //xData.add(x);
+                //yData.add(y);
+                
+                xData.clear();
+                yData.clear();
+                // Orders the HashMap of coordinates
+                Map<Double, Double> orderCoo = new TreeMap<>(coXY);
+                xData.addAll(orderCoo.keySet());
+                yData.addAll(orderCoo.values());
+                
+                chart.updateXYSeries("Data", xData, yData, null);
+                chart.updateXYSeries("SLS", new double[] {0}, new double[] {0}, null);
                 f.repaint();
+                System.out.println("^"+e.getX()+":"+e.getY());
             }
 
             @Override
@@ -1650,26 +1675,104 @@ public class Graph {
         jbSLS.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                double c = 0.5;
                 xData.clear();
                 yData.clear();
-                xData.add(1.0);
-                xData.add(1.0);
-                xData.add(2.0);
-                xData.add(3.0);
-                xData.add(5.0);
-                xData.add(8.0);
-                xData.add(13.0);
-                yData.add(1.0);
-                yData.add(1.0);
-                yData.add(2.0);
-                yData.add(3.0);
-                yData.add(5.0);
-                yData.add(8.0);
-                yData.add(13.0);
-                chart.updateXYSeries("SLS", xData, yData, null);
+                // Orders the HashMap of coordinates
+                Map<Double, Double> orderCoo = new TreeMap<>(coXY);
+                // Populates the ArrayList in order
+                xData.addAll(orderCoo.keySet());
+                yData.addAll(orderCoo.values());
+                
+                int n = xData.size();
+                double[][] A = new double[xData.size()][yData.size()];
+                double[][] B = new double[xData.size()][yData.size()];
+                double[][] E = new double[xData.size()][yData.size()];
+                //double[] copy = IntStream.range(0, 3).mapToDouble(i -> x.get(i)).toArray();
+                // Populates the matrices for A, B, and Error
+                for (int i = 0; i < n; i++) {
+                    for (int j = i + 1; j < n; j++) {
+                        // Copy the chunks required
+                        double[] copyx = IntStream.range(i, j+1).mapToDouble(k -> xData.get(k)).toArray();
+                        double[] copyy = IntStream.range(i, j+1).mapToDouble(k -> yData.get(k)).toArray();
+                        // Transfom it into ArrayList
+                        /*ArrayList<Double> copyXX = new ArrayList<>();
+                        ArrayList<Double> copyYY = new ArrayList<>();
+                        for (int k = 0; k < copyx.length; k++) {
+                            copyXX.add(copyx[k]);
+                            copyYY.add(copyy[k]);
+                        }*/
+                        ArrayList<Double> copyX = DoubleStream.of(copyx).boxed().collect(Collectors.toCollection(ArrayList::new));
+                        ArrayList<Double> copyY = DoubleStream.of(copyy).boxed().collect(Collectors.toCollection(ArrayList::new));
+                        //System.out.println(copyX.toString());
+                        //System.out.println(copyY.toString());
+                        Pair coefficients = Coef(copyX, copyY);
+                        double error = ErrorXY(copyX, copyY, (double)coefficients.getKey(), (double)coefficients.getValue());
+                        A[i][j] = (double)coefficients.getKey();
+                        B[i][j] = (double)coefficients.getValue();
+                        E[i][j] = error;
+                    }
+                }
+                for (int i = 0; i < n ; i++) {
+                    for (int j = 0; j < n ; j++) {
+                        System.out.print(E[i][j]+" ");
+                    }
+                    System.out.println();
+                }
+                double[] OPT = new double[n];
+                int[] retIndex = new int[n];
+                OPT[0] = 0;
+                for (int j = 0; j < n; j++) {
+                    OPT[j] = E[0][j] + c;
+                    retIndex[j] = 0;
+                    for (int i = 1; i <= j; i++) {
+                        if(OPT[i-1] + E[i][j] + c < OPT[j]) {
+                            OPT[j] = OPT[i - 1] + E[i][j] + c;
+                            retIndex[j] = i;
+                        }
+                    }
+                }
+                System.out.println(Arrays.toString(OPT));
+                System.out.println(Arrays.toString(retIndex));
+                
+                Pair coe = Coef(xData, yData);
+                double error = ErrorXY(xData, yData, (double)coe.getKey(), (double)coe.getValue());
+                double[] x_sls = {xData.get(0), xData.get(xData.size()-1)};
+                double[] y_sls = {(double)coe.getKey()*xData.get(0) + (double)coe.getValue(), (double)coe.getKey()*xData.get(xData.size() - 1) + (double)coe.getValue()};
+                System.out.println(coe.getKey()+" : "+coe.getValue()+" : "+error);
+                
+                chart.removeSeries("Data");
+                chart.removeSeries("SLS");
+                chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Line);
+                chart.setTitle("SLS");
+                chart.setXAxisTitle("X");
+                chart.setYAxisTitle("Y");
+                chart.addSeries("Data", xData, yData);
+                chart.addSeries("SLS", xData, yData);
+                chart.updateXYSeries("Data", xData, yData, null);
+                chart.updateXYSeries("SLS", x_sls, y_sls, null);
                 panel.repaint();
                 f.repaint();
             }
         });
+    }
+    
+    public Pair Coef(ArrayList<Double> x, ArrayList<Double> y) {
+        if (x.size() != y.size()) {
+            return new Pair(0.0, 0.0);
+            //return 0.0;
+        }
+        int n = x.size();
+        double sum_xy = IntStream.range(0, x.size()).mapToDouble(i -> x.get(i) * y.get(i)).sum();
+        double sum_x = x.stream().mapToDouble(a -> a).sum();
+        double sum_y = y.stream().mapToDouble(a -> a).sum();
+        double sum_xx = x.stream().mapToDouble(a -> a*a).sum();
+        double a = (n *  sum_xy - sum_x * sum_y)/(n * sum_xx - sum_x * sum_x);
+        double b = (sum_y - a * sum_x)/n;
+        return new Pair(a, b);
+    }
+    
+    public double ErrorXY(ArrayList<Double> x, ArrayList<Double> y, double a, double b) {
+        return IntStream.range(0, x.size()).mapToDouble(i -> Math.pow(y.get(i) - a * x.get(i) - b, 2)).sum();
     }
 }
