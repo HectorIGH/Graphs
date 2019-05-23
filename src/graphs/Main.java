@@ -683,7 +683,7 @@ public class Main{
                 JPanel panel = new JPanel(new GridLayout(4, 2, 3, 3));
                 f.setLocationRelativeTo(null);
                 f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                String[] algos = {"Basico", "Mamalon", "Muy Mamalon"};
+                String[] algos = {"Real Time", "Static"};
                 JComboBox<String> comboAlgo = new JComboBox<>(algos);
                 JButton JBalgo = new JButton("Run the algorithm.");
                 panel.add(new JLabel("Select the model to be used."));
@@ -725,44 +725,25 @@ public class Main{
                                 worker.execute();
                                 break;
                             case 1:
-                                int n = (int)Math.pow(2, 3) + 2;
-                                Complex[] x = new Complex[n];
-                                for (int i = 0; i < n; i++) {
-                                    x[i] = new Complex(i/1.0, 0.0);
-                                }
-                                double power = Math.log10(n) / Math.log10(2);
-                                if (power % 1 != 0) {
-                                    System.out.println("No power");
-                                    ArrayList<Complex> temporal = new ArrayList<>(Arrays.asList(x));
-                                    power = Math.ceil(power);
-                                    for (int i = n; i < Math.pow(2, power); i++) {
-                                        temporal.add(new Complex(0.0, 0.0));
-                                    }
-                                    x = temporal.toArray(x);
-                                }
-                                System.out.println(Arrays.toString(x));
-                                System.out.println("Directa:");
-                                Complex[] y = grafo.fft(x);
-                                System.out.println("Inversa:");
-                                Complex[] z = grafo.ifft(y);
-                                for (int i = 0; i < n; i++) {
-                                    System.out.println(x[i]+" : "+y[i]+" : "+z[i].abs());
-                                }
+                                f.dispose();
                                 worker = new SwingWorker<Void, Void>() {
                                     @Override
                                     protected Void doInBackground() {
-                                        return null;
-                                    }
-                                    @Override
-                                    protected void done() {
-                                    }
-                                };
-                                worker.execute();
-                                break;
-                            case 2:
-                                worker = new SwingWorker<Void, Void>() {
-                                    @Override
-                                    protected Void doInBackground() {
+                                        JOptionPane.getRootFrame().dispose();
+                                        FileNameExtensionFilter filter = new FileNameExtensionFilter("WAV FIles", "wav", "wav");
+                                        JFileChooser fc = new JFileChooser();
+                                        fc.setDialogTitle("Choose WAV File");
+                                        fc.setFileFilter(filter);
+                                        fc.setCurrentDirectory(new File(System.getProperty("user.home")));
+                                        if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                                            File selectedFile = fc.getSelectedFile();
+                                            Path path = Paths.get(selectedFile.getAbsolutePath());
+                                            try {
+                                                grafo.FFTStatic(path);
+                                            } catch (IOException | WavFileException ex) {
+                                                JOptionPane.showMessageDialog(null, "The file could not be opened.", "Not opened.", JOptionPane.ERROR_MESSAGE);
+                                            }
+                                        }
                                         return null;
                                     }
                                     @Override
@@ -776,7 +757,7 @@ public class Main{
                 });
                 //int result = JOptionPane.showConfirmDialog(null, panel, "Choose algorithm and set root node",JOptionPane.YES_OPTION, JOptionPane.PLAIN_MESSAGE);
                 String[] options = {"OK"};
-                JOptionPane.showOptionDialog(null, panel, "Search algorithms", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+                JOptionPane.showOptionDialog(null, panel, "Fast Fourier Transform", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             }
         });
         

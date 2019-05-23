@@ -49,6 +49,7 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYSeries;
 
 /**
@@ -1184,6 +1185,7 @@ public class Graph {
     Complex[] original = null;
     Complex[] transformed = null;
     Complex[] inversed = null;
+    double[] realTransformed = null;
     boolean running = true;
     double phase = 0;
     double frames = 0;
@@ -1191,6 +1193,7 @@ public class Graph {
     int index = 0;
     double minWAV = Double.MAX_VALUE;
     double maxWAV = Double.MIN_VALUE;
+    double max = Double.MIN_VALUE;
     Clip clip = null;
     public void FFT(Path path) throws IOException, WavFileException {
         originalWAVBuffer = null;
@@ -1198,6 +1201,7 @@ public class Graph {
         original = null;
         transformed = null;
         inversed = null;
+        realTransformed = null;
         phase = 0;
         frames = 0;
         rate = 0;
@@ -1208,7 +1212,7 @@ public class Graph {
         /////////////////////// First thing to do ///////////////////////////
         try {
             wavFile = WavFile.openWavFile(new File(path.toString()));
-            //wavFile.display();
+            wavFile.display();
             frames = wavFile.getNumFrames();
             rate = wavFile.getSampleRate();
         } catch (IOException | WavFileException ex) {
@@ -1228,7 +1232,7 @@ public class Graph {
         bar.setIndeterminate(true);
         bar.setStringPainted(true);
         bar.setBackground(Color.green);
-        bar.setString("Loading file. Please wait...");
+        bar.setString("Loading file and making magic. Please wait...");
         dialog.add(bar);
         dialog.pack();
         worker = new SwingWorker<Void, Void>() {
@@ -1251,20 +1255,20 @@ public class Graph {
         frame.setVisible(false);
         //getWavData(wavFile);
         double[][] initdata = getWavDataByChunks((int)rate);
-        double[][] initdata2 = getCosineData(phase + Math.PI);
+        double[][] initdata2 = {{0.0}, {0.0}};
         double[][] initdata3 = getInverseDataByChunks((int)rate);
  
         // Create Charts
         final XYChart chart = QuickChart.getChart("Original Data", "Time", "Wav", "wav", initdata[0], initdata[1]);
         
-        final XYChart chart2 = QuickChart.getChart("FFT Data", "Radianes", "Cosine", "cosine", initdata2[0], initdata2[1]);
+        final XYChart chart2 = QuickChart.getChart("FFT", "Frequency", "Magnitude", "fft", initdata2[0], initdata2[1]);
         
-        final XYChart chart3 = QuickChart.getChart("Recovered Data", "Time", "Recovered Wav", "ifft wav", initdata3[0], initdata[1]);
+        final XYChart chart3 = QuickChart.getChart("Recovered Data", "Time", "Recovered Wav", "ifft wav", initdata3[0], initdata3[1]);
         
         chart.getStyler().setYAxisMax(maxWAV);
         chart.getStyler().setYAxisMin(minWAV);
-        chart2.getStyler().setSeriesColors(new Color[] {Color.BLACK, Color.RED});
-        chart2.addSeries("sine", initdata2[0], initdata2[1]);
+        chart2.getStyler().setSeriesColors(new Color[] {Color.RED});
+        chart2.getStyler().setYAxisMax(max);
         chart3.getStyler().setYAxisMax(maxWAV);
         chart3.getStyler().setYAxisMin(minWAV);
         
@@ -1282,14 +1286,15 @@ public class Graph {
         mainPanel.add(pB);
         f.setLocationRelativeTo(null);
         f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        JButton JBFFT = new JButton("Perform FFT.");
-        pB.add(JBFFT);
+        //JButton JBFFT = new JButton("Perform FFT.");
+        //pB.add(JBFFT);
         JButton JBSaveWAV = new JButton("Save generated .wav.");
         pB.add(JBSaveWAV);
         f.setSize(1000, 150 * mainPanel.getComponentCount());
         f.add(mainPanel);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         f.setLocation((int)((screenSize.getWidth() - f.getWidth())/2), (int)((screenSize.getHeight() - f.getHeight())/2));
+        f.setVisible(true);
         JBSaveWAV.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1326,6 +1331,7 @@ public class Graph {
                 }
             }
         });
+        
         clip = null;
         try{
             clip = AudioSystem.getClip();
@@ -1346,7 +1352,7 @@ public class Graph {
                 }
             }
         });
-        f.setVisible(true);
+        //f.setVisible(true);
         /////////////////////////////////////////////////////////////////
 
         // Show it
@@ -1356,22 +1362,22 @@ public class Graph {
         clip.start();
 
         while (index < frames) {
-            phase += 2 * Math.PI * 2 / 20.0;
             try {
                 Thread.sleep(900);
             } catch (InterruptedException ex) {
                 //Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
             }
-            System.out.println("Refresco en index: "+index/(int)rate);
+            //System.out.println("Refresco en index: "+index/(int)rate);
             final double[][] data = getWavDataByChunks((int)rate);
-            final double[][] data2 = getCosineData(phase);
-            final double[][] data22 = getSineData(phase + Math.PI);
+            final double[][] data2 = getRealIFFT(index, index + (int)rate);
             final double[][] data3 = getInverseDataByChunks((int)rate);
             
             chart.updateXYSeries("wav", data[0], data[1], null);
-            chart2.updateXYSeries("cosine", data2[0], data2[1], null);
-            chart2.updateXYSeries("sine", data22[0], data22[1], null);
-            chart3.updateXYSeries("ifft wav", data3[0], data[1], null);
+            chart2.updateXYSeries("fft", data2[0], data2[1], null);
+            max = Arrays.stream(data2[1]).max().getAsDouble();
+            chart2.getStyler().setYAxisMax(max);
+            chart3.updateXYSeries("ifft wav", data3[0], data3[1], null);
+            
             
             //sw.repaintChart();
             mainPanel.repaint();
@@ -1381,26 +1387,142 @@ public class Graph {
         wavFile.close();
     }
     
-    private static double[][] getCosineData(double phase) {
-        double[] xData = new double[1000];
-        double[] yData = new double[1000];
-        for (int i = 0; i < xData.length; i++) {
-            double radians = phase + (2 * Math.PI / xData.length * i);
-            xData[i] = radians;
-            yData[i] = Math.cos(radians);
+    public void FFTStatic(Path path) throws IOException, WavFileException {
+        originalWAVBuffer = null;
+        running = true;
+        original = null;
+        transformed = null;
+        inversed = null;
+        realTransformed = null;
+        phase = 0;
+        frames = 0;
+        rate = 0;
+        index = 0;
+        minWAV = Double.MAX_VALUE;
+        maxWAV = Double.MIN_VALUE;
+        /////////////////////// Loading WAV file ///////////////////////////
+        /////////////////////// First thing to do ///////////////////////////
+        try {
+            wavFile = WavFile.openWavFile(new File(path.toString()));
+            wavFile.display();
+            frames = wavFile.getNumFrames();
+            rate = wavFile.getSampleRate();
+        } catch (IOException | WavFileException ex) {
+            JOptionPane.showMessageDialog(null, ex, "Error.", JOptionPane.ERROR_MESSAGE);
         }
-        return new double[][] { xData, yData };
-    }
-    
-    private static double[][] getSineData(double phase) {
-        double[] xData = new double[1000];
-        double[] yData = new double[1000];
-        for (int i = 0; i < xData.length; i++) {
-            double radians = phase + (2 * Math.PI / xData.length * i);
-            xData[i] = radians;
-            yData[i] = Math.sin(radians);
-        }
-        return new double[][] { xData, yData };
+        //////////////////////////////////////////////////////
+        
+        ///////////////////////To show a progress bar while reading wav and fft and ifft//////////////////
+        SwingWorker<Void, Void> worker;
+        JFrame frame = new JFrame();
+        final JDialog dialog = new JDialog(frame, true);
+        dialog.setUndecorated(true);
+        dialog.setLocationRelativeTo(null);
+        Dimension SS = Toolkit.getDefaultToolkit().getScreenSize();
+        dialog.setLocation((int)(SS.getWidth() - dialog.getWidth()) / 2, (int)((SS.getHeight() - dialog.getHeight()) / 2));
+        JProgressBar bar = new JProgressBar();
+        bar.setIndeterminate(true);
+        bar.setStringPainted(true);
+        bar.setBackground(Color.green);
+        bar.setString("Loading file and making magic. Please wait...");
+        dialog.add(bar);
+        dialog.pack();
+        worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                try {
+                    getWavData(wavFile);
+                    wavFile.close();
+                } catch (IOException|WavFileException ex) {
+                }
+                return null;
+            }
+            @Override
+            protected void done() {
+                dialog.dispose();
+                frame.dispose();
+            }
+        };
+        worker.execute();
+        dialog.setVisible(true);
+        frame.setVisible(false);
+        //getWavData(wavFile);
+        double[][] initdata = getWavDataByChunks((int)frames);
+        double[][] initdata2 = getRealIFFT(0, (int)frames);
+        double[][] initdata3 = getInverseDataByChunks((int)frames);
+ 
+        // Create Charts
+        final XYChart chart = QuickChart.getChart("Original Data", "Time", "Wav", "wav", initdata[0], initdata[1]);
+        
+        final XYChart chart2 = QuickChart.getChart("FFT", "Frequency", "Magnitude", "fft", initdata2[0], initdata2[1]);
+        
+        final XYChart chart3 = QuickChart.getChart("Recovered Data", "Time", "Recovered Wav", "ifft wav", initdata3[0], initdata3[1]);
+        
+        chart.getStyler().setYAxisMax(maxWAV);
+        chart.getStyler().setYAxisMin(minWAV);
+        chart2.getStyler().setSeriesColors(new Color[] {Color.RED});
+        chart2.getStyler().setYAxisMax(max);
+        chart3.getStyler().setYAxisMax(maxWAV);
+        chart3.getStyler().setYAxisMin(minWAV);
+        
+        //////////////////////////////// Constructing GUI ///////////////////////////
+        JFrame f = new JFrame("Fast Fourier Transform");
+        JPanel panel = new XChartPanel<>(chart);
+        JPanel panel2 = new XChartPanel<>(chart2);
+        JPanel panel3 = new XChartPanel<>(chart3);
+        JPanel pB = new JPanel();
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(panel);
+        mainPanel.add(panel2);
+        mainPanel.add(panel3);
+        mainPanel.add(pB);
+        f.setLocationRelativeTo(null);
+        f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        JButton JBSaveWAV = new JButton("Save generated .wav.");
+        pB.add(JBSaveWAV);
+        f.setSize(1000, 150 * mainPanel.getComponentCount());
+        f.add(mainPanel);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        f.setLocation((int)((screenSize.getWidth() - f.getWidth())/2), (int)((screenSize.getHeight() - f.getHeight())/2));
+        f.setVisible(true);
+        System.out.println("Visible finished");
+        JBSaveWAV.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    String name = "";
+                    JFileChooser fc = new JFileChooser();
+                    fc.setSelectedFile(new File("retrieved_sample"));
+                    if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                        name = fc.getCurrentDirectory().toString() + "\\" + fc.getSelectedFile().getName();
+                        int sampleRate = (int)rate;    // Samples per second
+                        double duration = frames/sampleRate;     // Seconds
+
+                        // Calculate the number of frames required for specified duration
+                        long numFrames = (long)(duration * sampleRate);
+                        // Create a wav file with the name specified as the first argument
+                        WavFile wavFile = WavFile.newWavFile(new File(name+".wav"), 1, numFrames, 16, sampleRate);
+
+                        // Create a buffer of 100 frames
+                        double[][] buffer = new double[1][(int)numFrames];
+
+                        // Fill the buffer, one tone per channel
+                        for (int s=0 ; s<numFrames ; s++) {
+                            buffer[0][s] = inversed[s].abs();
+                        }
+                        // Write the buffer
+                        wavFile.writeFrames(buffer, (int)numFrames);
+                        // Close the wavFile
+                        wavFile.close();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "The file will not be saved", "Not saved.", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                }catch (IOException | WavFileException exc) {
+                    JOptionPane.showMessageDialog(null, "The file could not be saved", "Error.", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }
     
     private double[][] getWavData(WavFile wavFile) throws IOException, WavFileException {
@@ -1421,20 +1543,24 @@ public class Graph {
                 xData[s] = s;
                 original[s] = new Complex(originalWAVBuffer[s], 0.0);
             }
-            for (int s = 0; s < framesRead * numChannels; s++) {
+            /*for (int s = 0; s < framesRead * numChannels; s++) {
                 if (originalWAVBuffer[s] > maxWAV) {
                     maxWAV = originalWAVBuffer[s];
                 }
                 if (originalWAVBuffer[s] < minWAV) {
                     minWAV = originalWAVBuffer[s];
                 }
-            }
+            }*/
         } while (framesRead != 0);
+        maxWAV = Arrays.stream(originalWAVBuffer).max().getAsDouble();
+        minWAV = Arrays.stream(originalWAVBuffer).min().getAsDouble();
         transformed = fft(original);
+        realTransformed = IntStream.range(0, (int)frames).mapToDouble(i -> transformed[i].abs()).toArray();
+        max = Arrays.stream(realTransformed).max().getAsDouble();
         inversed = ifft(transformed);
-        /*for (int i = 0; i < size; i++) {
-            System.out.println(originalWAVBuffer[i]+" : "+transformed[i]+" : "+inversed[i].abs()*Math.signum(originalWAVBuffer[i]));
-        }*/
+        //for (int i = 0; i < size; i++) {
+        //    System.out.println(/*originalWAVBuffer[i]+" : "+*/transformed[i]/*+" : "+inversed[i].abs()*Math.signum(originalWAVBuffer[i])*/);
+        //}
         return new double[][] { xData, originalWAVBuffer };
     }
     
@@ -1443,28 +1569,35 @@ public class Graph {
             sizeOfChunk = originalWAVBuffer.length - index;
         }
         
-        double[] xData = new double[sizeOfChunk];
+        /*double[] xData = new double[sizeOfChunk];
         double[] yData = new double[sizeOfChunk];
         
         for (int i = 0; i < sizeOfChunk; i ++) {
             xData[i] = (i + index)/rate;
             yData[i] = originalWAVBuffer[index + i];
-        }
+        }*/
+        double[] xData = IntStream.range(0, sizeOfChunk).mapToDouble(i -> (i + index)/rate).toArray();
+        double[] yData = IntStream.range(0, sizeOfChunk).mapToDouble(i -> originalWAVBuffer[index + i]).toArray();
         return new double[][] { xData, yData };
     }
     
     private double[][] getInverseDataByChunks(int sizeOfChunk) {
-        if(inversed.length < index + sizeOfChunk) {
-            sizeOfChunk = inversed.length - index;
+        if(originalWAVBuffer.length < index + sizeOfChunk) {
+            sizeOfChunk = originalWAVBuffer.length - index;
         }
         
-        double[] xData = new double[sizeOfChunk];
-        double[] yData = new double[sizeOfChunk];
-        
-        for (int i = 0; i < sizeOfChunk; i ++) {
-            xData[i] = (i + index)/rate;
-            yData[i] = inversed[index + i].abs() * Math.signum(originalWAVBuffer[i]);
+        double[] xData = IntStream.range(0, sizeOfChunk).mapToDouble(i -> (i + index)/rate).toArray();
+        double[] yData = IntStream.range(0, sizeOfChunk).mapToDouble(i -> inversed[index + i].abs() * Math.signum(originalWAVBuffer[i])).toArray();
+        return new double[][] { xData, yData };
+    }
+    
+    private double[][] getRealIFFT(int init, int end) {
+        if (frames < end) {
+            end = (int)frames;
         }
+
+        double[] xData = IntStream.range(0, end - init).map(a -> a).asDoubleStream().toArray();
+        double[] yData = IntStream.range(0, end - init).mapToDouble(i -> realTransformed[i + init]).toArray();
         return new double[][] { xData, yData };
     }
     
