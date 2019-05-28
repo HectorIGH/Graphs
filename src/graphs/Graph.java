@@ -1664,6 +1664,8 @@ public class Graph {
     double yMin = -100;
     double xMax = 100;
     double xMin = -100;
+    double factorX = 20.0;
+    double factorY = 16.0;
     ArrayList<Double> xData = new ArrayList<>();
     ArrayList<Double> yData = new ArrayList<>();
     HashMap<Double, Double> coXY = new HashMap<>();
@@ -1672,6 +1674,13 @@ public class Graph {
         double[] y = {0};
         xData.clear();
         yData.clear();
+        coXY.clear();
+        yMax = 100;
+        yMin = -100;
+        xMax = 100;
+        xMin = -100;
+        factorX = 20.0;
+        factorY = 16.0;
         final XYChart chart1 = QuickChart.getChart("SLS", "X", "Y", "SLS", x, y);
         final XYChart chart = new XYChart(chart1.getWidth(), chart1.getHeight());
         chart.setTitle("SLS");
@@ -1691,7 +1700,10 @@ public class Graph {
         chart.getStyler().setXAxisMin(xMin);
         chart.getStyler().setMarkerSize(20);
         chart.getStyler().setChartBackgroundColor(Color.CYAN);
+        chart.getStyler().setPlotMargin(0);
         chart.getStyler().setToolTipsEnabled(true);
+        
+        //chart.getStyler().setToolTipsAlwaysVisible(true);
         
         //////////////////////////////// Constructing GUI ///////////////////////////
         JFrame f = new JFrame("Segmented Least Square");
@@ -1721,6 +1733,8 @@ public class Graph {
         JButton jbSLS = new JButton("SLS.");
         pB.add(jbSLS);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        pB.setMaximumSize(new Dimension((int)screenSize.getWidth() - 100, 30));
+        pB.setLayout(new GridLayout(1, pB.getComponentCount()));
         f.setSize((int)screenSize.getWidth() - 100, (int)screenSize.getHeight() - 100);
         panel.setSize(new Dimension(f.getWidth(), f.getHeight() - jbZin.getHeight()));
         f.add(mainPanel);
@@ -1755,10 +1769,12 @@ public class Graph {
             @Override
             public void actionPerformed(ActionEvent e) {
                 double per = 1.0 - (double)JSPercent.getValue();
-                yMax = Math.ceil(chart.getStyler().getYAxisMax() * per);
-                yMin = Math.ceil(chart.getStyler().getYAxisMin() * per);
-                xMax = Math.ceil(chart.getStyler().getXAxisMax() * per);
-                xMin = Math.ceil(chart.getStyler().getXAxisMin() * per);
+                yMax = chart.getStyler().getYAxisMax() * per;
+                yMin = chart.getStyler().getYAxisMin() * per;
+                xMax = chart.getStyler().getXAxisMax() * per;
+                xMin = chart.getStyler().getXAxisMin() * per;
+                factorX = factorX * per;
+                factorY = factorY * per;
                 chart.getStyler().setYAxisMax(yMax);
                 chart.getStyler().setYAxisMin(yMin);
                 chart.getStyler().setXAxisMax(xMax);
@@ -1771,10 +1787,12 @@ public class Graph {
             @Override
             public void actionPerformed(ActionEvent e) {
                 double per = 1.0 + (double)JSPercent.getValue();
-                yMax = Math.ceil(chart.getStyler().getYAxisMax() * per);
-                yMin = Math.ceil(chart.getStyler().getYAxisMin() * per);
-                xMax = Math.ceil(chart.getStyler().getXAxisMax() * per);
-                xMin = Math.ceil(chart.getStyler().getXAxisMin() * per);
+                yMax = chart.getStyler().getYAxisMax() * per;
+                yMin = chart.getStyler().getYAxisMin() * per;
+                xMax = chart.getStyler().getXAxisMax() * per;
+                xMin = chart.getStyler().getXAxisMin() * per;
+                factorX = factorX * per;
+                factorY = factorY * per;
                 chart.getStyler().setYAxisMax(yMax);
                 chart.getStyler().setYAxisMin(yMin);
                 chart.getStyler().setXAxisMax(xMax);
@@ -1787,13 +1805,14 @@ public class Graph {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                double xBorder = 16.0;
-                double yBorder = 8.0;
-                double yBorderD = 17.0;
-                double x = (e.getX() - chart.getWidth() / 2 + xBorder) / (panel.getHeight() / xMax);
-                double y =((chart.getHeight()/2) - yBorder - e.getY()) / ((panel.getHeight() - yBorder - yBorderD) / (panel.getHeight() / 2)) ;
-                
+                double xBorderL = 16.0;
+                double xBorderC = (xMax < 100) ? 95.0 + 58.0 : 95.0 + 51.0;
+                double yBorderU = 8.0;
+                double yBorderC = 30.0 + 46.0;
+                double x = (e.getX() - chart.getWidth() / 2 + xBorderL) * ((xMax * 2 + factorX) / (chart.getWidth() - xBorderC));
+                double y = (chart.getHeight() / 2 - e.getY() - yBorderU) * ((yMax * 2 + factorY) / (chart.getHeight() - yBorderC));
                 coXY.put(x, y);
+                System.out.println(e.getY()+":"+chart.getHeight());
                 //xData.add(x);
                 //yData.add(y);
                 
