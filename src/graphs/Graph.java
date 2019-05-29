@@ -695,7 +695,7 @@ public class Graph {
             reverseDeque.addFirst(current);
             if (!nodosIndex.isEmpty()){
                 if (current.adjacentNodes.containsValue(nodosIndex.peek())) {
-                    System.out.println(current.getId()+"->"+nodosIndex.peek().getId());
+                    //System.out.println(current.getId()+"->"+nodosIndex.peek().getId());
                     createTreeEdge(adding, current, nodosIndex.peek(), "");
                     adding++;
                 } else {
@@ -704,7 +704,7 @@ public class Graph {
                     while (it.hasNext()) {
                         Node previousNode = (Node)it.next();
                         if (previousNode.adjacentNodes.containsValue(nodosIndex.peek())) {
-                            System.out.println(previousNode.getId()+"->"+nodosIndex.peek().getId());
+                            //System.out.println(previousNode.getId()+"->"+nodosIndex.peek().getId());
                             createTreeEdge(adding, previousNode, nodosIndex.peek(), "");
                             adding++;
                             break;
@@ -1011,13 +1011,13 @@ public class Graph {
             int second = find(prev, edge.b.getId());
             if (first == second) {
                 // We ignore since it would create a cycle
-                System.out.println("No avanzo weeee" + grafo.reachableNodes+" : "+mst.size());
+                //System.out.println("No avanzo weeee" + grafo.reachableNodes+" : "+mst.size());
                 Set zet = mst.entrySet();
                 Iterator ite = zet.iterator();
                 while(ite.hasNext()) {
                     Map.Entry menty = (Map.Entry)ite.next();
                     Edge edje = (Edge)menty.getValue();
-                    System.out.println(edje.toString());
+                    //System.out.println(edje.toString());
                 }
             } else {
                 // Add it to our final result
@@ -1043,7 +1043,7 @@ public class Graph {
         // Chain of parent pointers from x upwards through the tree
         // until an element is reached whose parent is itself
         if(prev.get(idNode) != idNode) {
-            System.out.println("Stuck_find");
+            //System.out.println("Stuck_find");
             return find(prev, prev.get(idNode));
         }
         return idNode;
@@ -1054,7 +1054,7 @@ public class Graph {
         int x_parent = find(prev, x);
         int y_parent = find(prev, y);
         // Make x as parent of y
-        System.out.println("Stuck_Union");
+        //System.out.println("Stuck_Union");
         prev.put(y_parent, x_parent);
     }
     
@@ -1115,7 +1115,7 @@ public class Graph {
     }
     
     public boolean prim(Graph grafo, Node s) {
-        grafo.DFS_R(grafo, s);
+        grafo.BFS(grafo, s);
         if(!grafo.checkAllVisited()){
             JOptionPane.showMessageDialog(null, "This method does not support not connected graphs.", "Error.", JOptionPane.WARNING_MESSAGE);
             return false;
@@ -1170,7 +1170,7 @@ public class Graph {
                         dist.put(v.getId(), edgeDistance);
                         v.setCost(edgeDistance);
                         prev.put(v.getId(), u.getId());
-                        mst.put(index, edgeCompara);
+                        mst.put(v.getId(), edgeCompara);
                         index++;
                     }
                     pq.add(v);
@@ -1178,6 +1178,34 @@ public class Graph {
             }
         }
         this.graphMST(grafo, "MST using Prim's Algorithm", mst);
+        /*Set se = Edges.entrySet();
+        Iterator i = se.iterator();
+        while(i.hasNext()) {
+            Map.Entry mentr = (Map.Entry)i.next();
+            Edge e = (Edge)mentr.getValue();
+            System.out.println("Edge: "+e.a.getId()+" -> "+e.b.getId() + " with weight: "+e.getWeight());
+        }
+        Set sett = dist.entrySet();
+        Iterator itt = sett.iterator();
+        while(itt.hasNext()) {
+            Map.Entry mentry = (Map.Entry)itt.next();
+            System.out.println("Nodo: " + mentry.getKey() + " Distance: " + mentry.getValue());
+        }
+        Set zet = prev.entrySet();
+        Iterator j = zet.iterator();
+        while(j.hasNext()) {
+            Map.Entry entry = (Map.Entry)j.next();
+            int a = (int)entry.getKey();
+            int b = (int)entry.getValue();
+            System.out.println("Nodo: " + a +" -> "+b);
+        }
+        zet = mst.entrySet();
+        j = zet.iterator();
+        while(j.hasNext()) {
+            Map.Entry entry = (Map.Entry)j.next();
+            Edge e = (Edge)entry.getValue();
+            System.out.println(e.toString());
+        }*/
         return true;
     }
     
@@ -1486,7 +1514,7 @@ public class Graph {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         f.setLocation((int)((screenSize.getWidth() - f.getWidth())/2), (int)((screenSize.getHeight() - f.getHeight())/2));
         f.setVisible(true);
-        System.out.println("Visible finished");
+        //System.out.println("Visible finished");
         JBSaveWAV.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1811,8 +1839,11 @@ public class Graph {
                 double yBorderC = 30.0 + 46.0;
                 double x = (e.getX() - chart.getWidth() / 2 + xBorderL) * ((xMax * 2 + factorX) / (chart.getWidth() - xBorderC));
                 double y = (chart.getHeight() / 2 - e.getY() - yBorderU) * ((yMax * 2 + factorY) / (chart.getHeight() - yBorderC));
+                if (coXY.containsKey(x)) {
+                    //System.out.println("Repetido");
+                    x = x + (double)coXY.size()/1000000.0;
+                }
                 coXY.put(x, y);
-                System.out.println(e.getY()+":"+chart.getHeight());
                 //xData.add(x);
                 //yData.add(y);
                 
@@ -1827,7 +1858,6 @@ public class Graph {
                 chart.updateXYSeries("LS", new double[] {0}, new double[] {0}, null);
                 chart.updateXYSeries("SLS", new double[] {0}, new double[] {0}, null);
                 f.repaint();
-                //System.out.println("^"+e.getX()+":"+e.getY());
             }
 
             @Override
