@@ -199,6 +199,7 @@ public class Graph {
         createNodes(n);
 
         for(i = 0; i < n; i++) { // We iterate as long as there are nodes left
+            //System.out.println(i);
             for(j = 0; j < n; j++){
                 if (cic == 0 && (i == j)) { // Loops not allowed
                     continue;
@@ -476,7 +477,9 @@ public class Graph {
         return 1;
     }
 
+    boolean flag = true;
     public int readGraph(Graph grafo) {
+        flag = true;
         Set<Integer> nodesFromFile = new HashSet<>();
         grafo.Nodes.clear();
         grafo.Edges.clear();
@@ -594,6 +597,7 @@ public class Graph {
                         //System.out.println(Edges.size() +":" + Nodes.size());
                     } catch(IOException e) {
                         JOptionPane.showMessageDialog(null, "The file could not be loaded.", "File not loaded", JOptionPane.INFORMATION_MESSAGE);
+                        flag = false;
                         return null;
                     }
                     return null;
@@ -605,7 +609,10 @@ public class Graph {
             };
             worker.execute();
             dialog.setVisible(true);
-            return 1;
+            if (flag) {
+                return 1;
+            }
+            return 0;
         }
         return 0;
     }
@@ -1028,6 +1035,7 @@ public class Graph {
         }
         // Print MST
         this.graphMST(grafo, "MST using Kruskal", mst);
+        this.resetNodes(grafo);
         /*System.out.println("Minimum Spanning Tree: "+mst.size());
         Set zet = mst.entrySet();
         Iterator ite = zet.iterator();
@@ -1096,6 +1104,7 @@ public class Graph {
         }
         // Print MST
         this.graphMST(grafo, "MST using Reverse Kruskal", mst);
+        this.resetNodes(grafo);
         return true;
     }
     
@@ -1178,6 +1187,7 @@ public class Graph {
             }
         }
         this.graphMST(grafo, "MST using Prim's Algorithm", mst);
+        this.resetNodes(grafo);
         /*Set se = Edges.entrySet();
         Iterator i = se.iterator();
         while(i.hasNext()) {
