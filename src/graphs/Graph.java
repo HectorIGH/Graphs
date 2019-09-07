@@ -68,22 +68,56 @@ public class Graph {
     boolean loadWAV = false;
     WavFile wavFile = null;
 
+    /** Constructor of the library
+     *
+     */
     public Graph() {
         //Constructor with no parameters
     }
 
+    /** Create a new Node object with the id, name and data passed as parameters.
+     * It also adds the new node into the global Nodes HashMap with the id as key
+     * and the node itself as value.
+     * 
+     * @param id The node's ID as an integer
+     * @param name The node's name as a string
+     * @param data The node's data as a string
+     * @return 0 as signal that everything went OK
+     */
     public int createNode(int id, String name, String data) {
         Node nodo = new Node(id, name, data);
         Nodes.put(id, nodo);
         return 0;
     }
 
+    /**
+     * Same as createNode but with two extra parameters that represent the coordinates
+     * in the Cartesian plane.
+     * @param id The node's ID as an integer
+     * @param name The node's name as a string
+     * @param x The node's x coordinate as a double
+     * @param y The node's y coordinate as a double
+     * @param data The node's data as a string
+     * @return return 0 as signal that everything went OK
+     */
     public int createNodeXY(int id, String name, double x, double y, String data) {
         Node nodo = new Node(id, name, x, y, data);
         Nodes.put(id, nodo);
         return 0;
     }
 
+    /**
+     * Creates an object Edge with the data passed as parameters. It also adds the object
+     * to the global Edges HashMap and updates the grades of the nodes passed as parameters
+     * accordingly if the edge is directed or not.
+     * @param id The edge ID as an integer
+     * @param a The node 'a' connected by the edge as a Node object
+     * @param b The node 'b' connected by the edge as a Node object
+     * @param data The data of the edge as a string
+     * @param dir Integer that defines if the edge is directed. If dir is equal to 0
+     * the edge si not directed, otherwise is directed.
+     * @return 0 as an indicator that everything went OK.
+     */
     public int createEdge(int id, Node a, Node b, String data, int dir) {
         Edge edge = new Edge(a, b, data);
         Edges.put(id, edge);
@@ -98,15 +132,35 @@ public class Graph {
         return 0;
     }
 
+    /**
+     * Creates an edge with the data passed as parameters. It adds the edge to the 
+     * global treeEdges HashMap which is useful when we export a Tree Graph
+     * @param id The edge ID as an integer.
+     * @param a The Node 'a' of the edge.
+     * @param b The Node 'b' of the edge.
+     * @param data The edge data as a string.
+     * @return 0 if everything was OK.
+     */
     public int createTreeEdge(int id, Node a, Node b, String data) {
         Edge edge = new Edge(a, b, data);
         treeEdges.put(id, edge);
         return 0;
     }
 
+    /**
+     * Getter function to retrieve the grad of a Node
+     * @param node The Node object to retrieve the grad from.
+     * @return The grad of the Node as an integer.
+     */
     public int getGradNode(Node node) {
         return node.getGrad();
     }
+    /**
+     * Helper function to create as much nodes as the passed parameter.
+     * It creates the nodes with the name set as 'Node i' where i represents
+     * its id. And the data is set as 'No data'. This should be changed accordingly.
+     * @param n An integer that tells how many nodes to create.
+     */
 
     public void createNodes(int n) {
         int i;
@@ -115,6 +169,12 @@ public class Graph {
         }
     }
     
+    /**
+     * Helper function to set how many actual nodes are in the graph. This is useful
+     * at the moment of loading a graph from file. Since there exists a possibility a node
+     * is never connected, the biggest ID usually does not match the number of nodes in the graph.
+     * This function sets to a global variable 'reachableNodes' the actual number of useful nodes.
+     */
     public void sieveNodes() {
         Set<Integer> reachable = new HashSet<>();
         Set set = Edges.entrySet();
@@ -128,6 +188,11 @@ public class Graph {
         this.reachableNodes = reachable.size();
     }
     
+    /**
+     * Helper function to create the nodes in a graph loaded from a file.
+     * @param nodesFromFile Is a Set which contains the IDs of the nodes
+     * to create.
+     */
     public void createNodesFromFile(Set<Integer> nodesFromFile) {
         for (int index : nodesFromFile) {
             createNode(index, "Node " + index, "No data");
@@ -135,6 +200,11 @@ public class Graph {
         }
     }
 
+    /**
+     * Same as createNodes but this time it also sets the x and y coordinates randomly
+     * with values ranging from 0 to 1.
+     * @param n The number of nodes to create as an integer.
+     */
     public void createNodesXY(int n) {
         int i;
         double x,y;
@@ -146,6 +216,14 @@ public class Graph {
         }
     }
 
+    /**
+     * It performs the Erdös-Renyi algorithm to create a random graph.
+     * @param n It represents the number of nodes to create, as an integer.
+     * @param m It represents the number of distinct edges to create, as an integer.
+     * @param dir It represents if the graph is directed. 0 means no directed, any other number means it is directed.
+     * @param cic If is 0, it means an edge that connects a node to itself is not allowed. Any other number will allow self connections.
+     * @return The created graph as a Graph object.
+     */
     public Graph Erdos(int n, int m, int dir, int cic) {
         this.Nodes.clear();
         this.Edges.clear();
@@ -190,6 +268,14 @@ public class Graph {
         return this;
     }
 
+    /**
+     * It performs the Gilbert algorithm to create a random graph.
+     * @param n It represents the number of nodes to create, as an integer.
+     * @param p Double less than 1 representing the threshold to pass so an edge can be created.
+     * @param dir It represents if the graph is directed. 0 means no directed, any other number means it is directed.
+     * @param cic If is 0, it means an edge that connects a node to itself is not allowed. Any other number will allow self connections.
+     * @return The created graph as a Graph object.
+     */
     public Graph Gilbert(int n, double p, int dir, int cic) {
         this.Nodes.clear();
         this.Edges.clear();
@@ -260,6 +346,14 @@ public class Graph {
         return this;
     }
 
+    /**
+     * It performs the Geographic algorithm to create a random graph.
+     * @param n It represents the number of nodes to create, as an integer.
+     * @param r Double less than square root of 2 representing the threshold to not pass so an edge can be created.
+     * @param dir It represents if the graph is directed. 0 means no directed, any other number means it is directed.
+     * @param cic If is 0, it means an edge that connects a node to itself is not allowed. Any other number will allow self connections.
+     * @return The created graph as a Graph object.
+     */
     public Graph Geo(int n, double r, int dir, int cic) {
         this.Nodes.clear();
         this.Edges.clear();
@@ -347,6 +441,15 @@ public class Graph {
         return this;
     }
 
+    /**
+     * It performs the Geographic algorithm to create a random graph.
+     * @param n It represents the number of nodes to create, as an integer.
+     * @param d The expected degree of each node.
+     * @param g Hyper parameter of the algorithm.
+     * @param dir It represents if the graph is directed. 0 means no directed, any other number means it is directed.
+     * @param cic If is 0, it means an edge that connects a node to itself is not allowed. Any other number will allow self connections.
+     * @return The created graph as a Graph object.
+     */
     public Graph Barabasi(int n, int d, double g, int dir, int cic) {
         this.Nodes.clear();
         this.Edges.clear();
@@ -374,14 +477,31 @@ public class Graph {
         return this;
     }
 
+    /**
+     * Getter function to retrieve the HashMap that contains the Nodes in the graph. With key
+     * the node ID.
+     * @return HashMap
+     */
     public HashMap<Integer, Node> getNodesGraph() {
         return Nodes;
     }
 
+    /**
+     * Getter function to retrieve the HashMap that contains the Edges in the graph. With key
+     * the edge ID.
+     * @return HashMap
+     */
     public HashMap<Integer, Edge> getEdgesGraph() {
         return Edges;
     }
 
+    /**
+     * Function to save the Graph object as a '.gv' file in the location and with the name set by the user.
+     * @param grapho The Graph object to be saved as file.
+     * @param dir An integer which controls if the graph is not directed (dir == 0) or directed (any other value).
+     * @param name The name for the file passed as parameter. It is override by the user while saving.
+     * @return 1 if everything went fine. Otherwise 0.
+     */
     public int graphGraph(Graph grapho, int dir, String name) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
@@ -434,10 +554,20 @@ public class Graph {
         return 1;
     }
 
+    /**
+     * Getter function to retrieve the treeEdges HashMap. It is used when saving a graph that is actually a tree.
+     * @return HashMap
+     */
     public HashMap<Integer, Edge> getEdgesTree() {
         return treeEdges;
     }
 
+    /**
+     * As graphGraph but is saves a Tree.
+     * @param grafo Graph object to be saved into a file.
+     * @param name The name of the file passed as parameter. Override by the user while saving.
+     * @return 1 if everything went fine. Otherwise 0.
+     */
     public int graphTree(Graph grafo, String name) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
@@ -478,6 +608,12 @@ public class Graph {
     }
 
     boolean flag = true;
+    /**
+     * Loads into memory a graph from a '.gv' file.
+     * @param grafo It needs a Graph object to manipulate its global parameters. This is probably a horrible practice an cumbersome.
+     * The program should be changed to improve this. Did not care at the time, as long as it was functional.
+     * @return 1 if everything was fine. 0 if something failed.
+     */
     public int readGraph(Graph grafo) {
         flag = true;
         Set<Integer> nodesFromFile = new HashSet<>();
@@ -617,6 +753,10 @@ public class Graph {
         return 0;
     }
 
+    /**
+     * Resets the Node.visited field to false of every single node in the graph.
+     * @param grafo Graph object to whose nodes will be reseted.
+     */
     public void resetNodes(Graph grafo) {
         Set set = grafo.getNodesGraph().entrySet();
         Iterator it = set.iterator();
@@ -627,10 +767,19 @@ public class Graph {
         }
     }
 
+    /**
+     * It cleans the treeEdges HashMap.
+     * @param grafo Graph object to whose treeEdges will be reseted.
+     */
     public void resetTree(Graph grafo) {
         grafo.treeEdges.clear();
     }
 
+    /**
+     * It performs the Broad First Search algorithm to the graph.
+     * @param grafo Graph object to whom the algorithm will be applied.
+     * @param root The root node where the algorithm starts.
+     */
     public void BFS(Graph grafo, Node root) {
         Deque<Node> myQ = new LinkedList<>();
         myQ.add(root);
@@ -654,6 +803,12 @@ public class Graph {
         }
     }
 
+    /**
+     * It performs the Deep First Search recursive algorithm to the graph.
+     * @param grafo Graph object to whom the algorithm will be applied.
+     * @param root The root node where the algorithm starts.
+     * @return The ID of the root node. Needed for the recursive stage.
+     */
     public int DFS_R(Graph grafo, Node root) {
         HashMap<Integer, Node> neighbors = root.getAdjacentNodes();
         root.visited = true;
@@ -674,6 +829,11 @@ public class Graph {
         return root.getId();
     }
 
+    /**
+     * * It performs the Deep First Search iterative algorithm to the graph.
+     * @param grafo Graph object to whom the algorithm will be applied.
+     * @param root The root node where the algorithm starts.
+     */
     public void DFS_I(Graph grafo, Node root){
         Stack<Node> stack = new Stack<>();
         Deque<Node> nodosIndex = new LinkedList<>();
@@ -722,6 +882,12 @@ public class Graph {
         }
     }
 
+    /**
+     * Sets the weight to each Edge in a random fashion. It also calls the function graphWeightedGraph() to save the weighted graph.
+     * @param min The minimum value a weight can have.
+     * @param max The maximum value a weight can have.
+     * @param onlyInteger If is 1 the weights will be only integers.
+     */
     public void setEdgeWeights(double min, double max, boolean onlyInteger) {
         Set set = Edges.entrySet();
         Iterator it = set.iterator();
@@ -737,6 +903,10 @@ public class Graph {
         graphWeightedGraph();
     }
 
+    /**
+     * It saves to a file the weighted graph.
+     * @return 1 if everything was fine. 0 otherwise.
+     */
     public int graphWeightedGraph() {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
@@ -783,6 +953,11 @@ public class Graph {
         return 1;
     }
 
+    /**
+     * It performs the Dijkstra algorithm to the graph.
+     * @param grafo The graph to whom the algorithm will be performed.
+     * @param s The root node.
+     */
     public void Dijkstra(Graph grafo, Node s) {
         int key = -1;
         Edge edge = new Edge();
@@ -875,6 +1050,14 @@ public class Graph {
         }*/
     }
 
+    /**
+     * Saves to a file the tree found by Dijkstra.
+     * @param grafo The graph object to be saved as a file.
+     * @param name The name of the file. This will be override by the user while saving.
+     * @param prev The HashMap that contains all the parents.
+     * @param dist The HashMap that contains all the distances.
+     * @return 1 if everything was fine. 0 otherwise.
+     */
     public int graphDijkstra(Graph grafo, String name, HashMap<Integer, Integer> prev, HashMap<Integer, Double> dist) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
@@ -941,6 +1124,13 @@ public class Graph {
         return 1;
     }
     
+    /**
+     * Saves to file the Minimum Spanning Tree.
+     * @param grafo The graph to be saved.
+     * @param name The name of the file. Override by the user while saving.
+     * @param mst The minimum spanning tree as a HashMap
+     * @return 1 if everything was OK. 0 otherwise.
+     */
     public int graphMST(Graph grafo, String name, HashMap<Integer, Edge> mst) {
         //System.out.println("The graph will be saved in: C:\\temp\\"+name+".gv");
         JFileChooser fc = new JFileChooser();
@@ -988,6 +1178,10 @@ public class Graph {
         return 1;
     }
     
+    /**
+     * It performs the Kruskal's algorithm to the graph.
+     * @param grafo The graph to whom the algorithm will be applied.
+     */
     public void kruskal(Graph grafo) {
         PriorityQueue<Edge> pq = new PriorityQueue<>();
         HashMap<Integer, Integer> prev = new HashMap<>();
@@ -1047,6 +1241,12 @@ public class Graph {
     }
     
     // Auxiliar functions for Kruskal
+    /**
+     * Auxiliar function for Kruskal
+     * @param prev HashMap of the previous.
+     * @param idNode ID of the node.
+     * @return the id of the node.
+     */
     public int find(HashMap<Integer, Integer> prev, int idNode) {
         // Chain of parent pointers from x upwards through the tree
         // until an element is reached whose parent is itself
@@ -1058,6 +1258,12 @@ public class Graph {
     }
     
     // Auxiliar function for Kruskal
+    /**
+     * Another helper function for Kruskal
+     * @param prev HashMap of the previous.
+     * @param x To find parents.
+     * @param y To find parents.
+     */
     public void union(HashMap<Integer, Integer> prev, int x, int y) {
         int x_parent = find(prev, x);
         int y_parent = find(prev, y);
@@ -1066,6 +1272,12 @@ public class Graph {
         prev.put(y_parent, x_parent);
     }
     
+    /**
+     * It performs the inverse Kruskal algorithm.
+     * @param grafo The graph to whom the algorithm will be applied.
+     * @param s The node to start from.
+     * @return true if this algorithm can be performed to the graph. false if it can not be performed, i.e. the graph is not connected.
+     */
     public boolean inverseKruskal(Graph grafo, Node s) {
         grafo.DFS_R(grafo, s);
         if(!grafo.checkAllVisited()){
@@ -1108,6 +1320,10 @@ public class Graph {
         return true;
     }
     
+    /**
+     * Helper function to check if all nodes were visited.
+     * @return true if all nodes were visited. false otherwise.
+     */
     public boolean checkAllVisited() {
         Set set = Nodes.entrySet();
         Iterator ite = set.iterator();
@@ -1123,6 +1339,12 @@ public class Graph {
         return true;
     }
     
+    /**
+     * It performs the Prim's algorithm.
+     * @param grafo The graph to whom the algorithm will be applied.
+     * @param s The node to start from.
+     * @return true if this algorithm can be performed to the graph. false if it can not be performed, i.e. the graph is not connected.
+     */
     public boolean prim(Graph grafo, Node s) {
         grafo.BFS(grafo, s);
         if(!grafo.checkAllVisited()){
@@ -1233,6 +1455,13 @@ public class Graph {
     double maxWAV = Double.MIN_VALUE;
     double max = Double.MIN_VALUE;
     Clip clip = null;
+    /**
+     * Performs everything needed for the FFT in 'real time'. Due to the library used, only certain type of
+     * WAV files are supported. You should try and find which ones.
+     * @param path The path of the '.wav' file
+     * @throws IOException See documentation in Java.
+     * @throws WavFileException See documentation in the WAV library.
+     */
     public void FFT(Path path) throws IOException, WavFileException {
         originalWAVBuffer = null;
         running = true;
@@ -1425,6 +1654,13 @@ public class Graph {
         wavFile.close();
     }
     
+    /**
+     * Performs everything needed for the static FFT. Due to the library used, only certain type of
+     * WAV files are supported. You should try and find which ones.
+     * @param path The path of the '.wav' file
+     * @throws IOException See documentation in Java.
+     * @throws WavFileException See documentation in the WAV library.
+     */
     public void FFTStatic(Path path) throws IOException, WavFileException {
         originalWAVBuffer = null;
         running = true;
@@ -1563,6 +1799,13 @@ public class Graph {
         });
     }
     
+    /**
+     * Gets for once all the data from the WAV file.
+     * @param wavFile The WAV file to extract the data from.
+     * @return a double[][] containing all the data.
+     * @throws IOException
+     * @throws WavFileException 
+     */
     private double[][] getWavData(WavFile wavFile) throws IOException, WavFileException {
         int numChannels = wavFile.getNumChannels();
         double numFrames = wavFile.getNumFrames();
@@ -1602,6 +1845,11 @@ public class Graph {
         return new double[][] { xData, originalWAVBuffer };
     }
     
+    /**
+     * Discretise the data from the WAV file.
+     * @param sizeOfChunk How many points of data to get at once.
+     * @return double[][] with the length equal to sizeOfChunk.
+     */
     private double[][] getWavDataByChunks(int sizeOfChunk) {
         if(originalWAVBuffer.length < index + sizeOfChunk) {
             sizeOfChunk = originalWAVBuffer.length - index;
@@ -1619,6 +1867,11 @@ public class Graph {
         return new double[][] { xData, yData };
     }
     
+    /**
+     * Discretise the data from the inverse transform.
+     * @param sizeOfChunk
+     * @return double[][] with the length equal to sizeOfChunk.
+     */
     private double[][] getInverseDataByChunks(int sizeOfChunk) {
         if(originalWAVBuffer.length < index + sizeOfChunk) {
             sizeOfChunk = originalWAVBuffer.length - index;
@@ -1629,6 +1882,12 @@ public class Graph {
         return new double[][] { xData, yData };
     }
     
+    /**
+     * Returns only the real part of the IFFT.
+     * @param init Start index of the data to retrieve.
+     * @param end End index of the data to retrieve.
+     * @return double[][] with the real data.
+     */
     private double[][] getRealIFFT(int init, int end) {
         if (frames < end) {
             end = (int)frames;
@@ -1639,6 +1898,11 @@ public class Graph {
         return new double[][] { xData, yData };
     }
     
+    /**
+     * Performs the FFT to an array of complex values.
+     * @param x The Complex[] array of values.
+     * @return Complex[] representing the FFT of x.
+     */
     public Complex[] fft(Complex[] x) {
         int n = x.length;
         if (n == 1) {
@@ -1674,6 +1938,11 @@ public class Graph {
         return y;
     }
     
+    /**
+     * Performs the IFFT to an array of complex values.
+     * @param x The Complex[] array of values.
+     * @return Complex[] representing the IFFT of x.
+     */
     public Complex[] ifft(Complex[] x) {
         int n = x.length;
         Complex[] y = new Complex[n];
@@ -1707,6 +1976,9 @@ public class Graph {
     ArrayList<Double> xData = new ArrayList<>();
     ArrayList<Double> yData = new ArrayList<>();
     HashMap<Double, Double> coXY = new HashMap<>();
+    /**
+     * Performs the entirety Segmented Least Squares algorithm.
+     */
     public void SLS() {
         double[] x = {0};
         double[] y = {0};
@@ -2017,6 +2289,12 @@ public class Graph {
         });
     }
     
+    /**
+     * Calculates the coefficients for the LS algorithm.
+     * @param x ArrayList of the x coordinates.
+     * @param y ArrayList of the y coordinates.
+     * @return Pair(a,b) of the coefficients used in the LS algorithm.
+     */
     public Pair Coef(ArrayList<Double> x, ArrayList<Double> y) {
         if (x.size() != y.size()) {
             return new Pair(0.0, 0.0);
@@ -2032,6 +2310,14 @@ public class Graph {
         return new Pair(a, b);
     }
     
+    /**
+     * Calculates the Error for the SLS.
+     * @param x ArrayList of the x coordinates.
+     * @param y ArrayList of the y coordinates.
+     * @param a The coefficient 'a' for the SLS.
+     * @param b The coefficient 'b' for the SLS.
+     * @return A double representing the error of the SLS iteration.
+     */
     public double ErrorXY(ArrayList<Double> x, ArrayList<Double> y, double a, double b) {
         return IntStream.range(0, x.size()).mapToDouble(i -> Math.pow(y.get(i) - a * x.get(i) - b, 2)).sum();
     }

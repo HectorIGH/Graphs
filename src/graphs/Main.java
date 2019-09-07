@@ -27,19 +27,21 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Main{
 
-    /**
+    /** The main calls the function showGUI, which handles all the Graphic User Interface
      * @param args the command line arguments
+     * 
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 showGUI();
             }
         });
     }
-    
+    /**
+     * It should be self-explanatory since each function is documented in the java documentation
+     */
     private static void showGUI() {
         // Create object Graph
         Graph grafo = new Graph();
